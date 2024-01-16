@@ -25,18 +25,13 @@ public class ChessBoard {
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
         // if the position is out of bounds, throw an exception
-        if (position.getRow() < 1 || position.getRow() > 8) {
-            throw new IllegalArgumentException("Position out of bounds");
-        }
-        if (position.getColumn() < 1 || position.getColumn() > 8) {
+        if (position.getRow() < 1 || position.getRow() > 8 || position.getColumn() < 1 || position.getColumn() > 8) {
             throw new IllegalArgumentException("Position out of bounds");
         }
 
         // set piece on board
         // make sure to adjust position with 0 indexed board array so i don't have to worry about that elsewhere
         board[position.getRow() - 1][position.getColumn() - 1] = piece;
-
-        // throw new RuntimeException("Not implemented");
     }
 
     /**
