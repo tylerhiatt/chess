@@ -3,6 +3,7 @@ package chess;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Objects;
 
 /**
  * Represents a single chess piece
@@ -13,8 +14,31 @@ import java.util.Set;
 public class ChessPiece {
 
     // class attributes
-    private ChessGame.TeamColor pieceColor;
-    private PieceType type;
+    private final ChessGame.TeamColor pieceColor;
+    private final PieceType type;
+
+    // override equals, hashcode and to string methods here
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChessPiece that = (ChessPiece) o;
+        return pieceColor == that.pieceColor && type == that.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pieceColor, type);
+    }
+
+    @Override
+    public String toString() {
+        return "ChessPiece{" +
+                "pieceColor=" + pieceColor +
+                ", type=" + type +
+                '}';
+    }
+
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         // initialize attributes in constructor
@@ -162,6 +186,8 @@ public class ChessPiece {
     }
 
     private Set<ChessMove> knightMoves(ChessBoard board, ChessPosition myPosition) {
+        // special moves -> L shape, same capture logic
+
         Set<ChessMove> validMoves = new HashSet<>();
         int currentRow = myPosition.getRow();
         int currentCol = myPosition.getColumn();
@@ -178,12 +204,12 @@ public class ChessPiece {
             int newRow = currentRow + move[0];
             int newCol = currentCol + move[1];
 
-            // Check if new position is on the board
+            // check if new position is on the board
             if (newRow >= 1 && newRow <= 8 && newCol >= 1 && newCol <= 8) {
                 ChessPosition newPos = new ChessPosition(newRow, newCol);
                 ChessPiece pieceAtNewPos = board.getPiece(newPos);
 
-                // Add move if new position is empty or occupied by an opponent's piece
+                // add move if new position is empty or occupied by an opponent's piece
                 if (pieceAtNewPos == null || pieceAtNewPos.getTeamColor() != this.getTeamColor()) {
                     validMoves.add(new ChessMove(myPosition, newPos, null));
                 }
@@ -206,7 +232,23 @@ public class ChessPiece {
     }
 
     private Set<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPosition) {
-        throw new RuntimeException("Not implemented yet");
+        // special logic for pawn -> promotion pieces, two-step move from start, forward movement no capture, only diagonal capture
+        Set<ChessMove> moves = new HashSet<>();
+
+        // initial move is white
+        int direction = 0;
+        if (pieceColor == ChessGame.TeamColor.WHITE) {
+            direction = 1;
+        } else {
+            direction = -1;
+        }
+
+        ChessPosition moveOne = new ChessPosition(myPosition.getRow() + direction, myPosition.getColumn());
+        // if the space is empty, move one step forward
+
+        ChessPosition moveTwo = new ChessPosition(myPosition.getRow() + 2*direction, myPosition.getColumn());
+
+        return moves;
     }
 
 

@@ -1,4 +1,5 @@
 package chess;
+import java.util.Arrays;
 
 /**
  * A chessboard that can hold and rearrange chess pieces.
@@ -9,8 +10,28 @@ package chess;
 public class ChessBoard {
 
     // class attributes
-    // in order to store chess pieces on the board, I can use a 2D array fort eh 8x8 grid, calling the ChessPiece object
-    private ChessPiece[][] board;
+    private final ChessPiece[][] board;
+
+    // override equals, hashcode and to string methods here
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChessBoard that = (ChessBoard) o;
+        return Arrays.deepEquals(board, that.board);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.deepHashCode(board);
+    }
+
+    @Override
+    public String toString() {
+        return "ChessBoard{" +
+                "board=" + Arrays.deepToString(board) +
+                '}';
+    }
 
     public ChessBoard() {
         // initialize chess board array in the constructor
@@ -24,12 +45,6 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-        // if the position is out of bounds, throw an exception
-        if (position.getRow() < 1 || position.getRow() > 8 || position.getColumn() < 1 || position.getColumn() > 8) {
-            throw new IllegalArgumentException("Position out of bounds");
-        }
-
-        // set piece on board
         // make sure to adjust position with 0 indexed board array so i don't have to worry about that elsewhere
         board[position.getRow() - 1][position.getColumn() - 1] = piece;
     }
@@ -42,14 +57,7 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        ChessPiece piece = board[position.getRow() - 1][position.getColumn() -1];
-
-        // return piece position or null depending if piece is at position or not
-        if (piece == null) {
-            return null;
-        } else {
-            return piece;
-        }
+        return board[position.getRow() - 1][position.getColumn() -1];
     }
 
     /**
