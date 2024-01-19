@@ -106,13 +106,12 @@ public class ChessPiece {
 
         // loop over each direction that the piece has
         for (int[] direction : directions) {
-            // sets to piece's current pos
             int newRow = myPosition.getRow();
             int newCol = myPosition.getColumn();
 
             while (true) {
-                newRow += direction[0];  // 1st number is row direction offset
-                newCol += direction[1];  // 2nd number is column direction offset
+                newRow += direction[0];  // row direction offset
+                newCol += direction[1];  // col direction offset
 
                 if (newRow < 1 || newRow > 8 || newCol < 1 || newCol > 8) {
                     break; // break if not in the board boundaries
@@ -140,7 +139,6 @@ public class ChessPiece {
 
         return moves;
     }
-
 
     private Set<ChessMove> kingMoves(ChessBoard board, ChessPosition myPosition) {
         // moves for a king
@@ -192,12 +190,12 @@ public class ChessPiece {
         int currentRow = myPosition.getRow();
         int currentCol = myPosition.getColumn();
 
-        // moves for a knight
+        // L moves for a knight
         int[][] knightMoves = {
-                {-2, -1}, {-2, 1},  // Upwards L-moves
-                {-1, -2}, {-1, 2},  // Left and Right L-moves
-                {1, -2},  {1, 2},   // Left and Right L-moves
-                {2, -1},  {2, 1}    // Downwards L-moves
+                {-2, -1}, {-2, 1},  // upwards L-moves
+                {-1, -2}, {-1, 2},  // left and Right L-moves
+                {1, -2},  {1, 2},   // left and Right L-moves
+                {2, -1},  {2, 1}    // downwards L-moves
         };
 
         for (int[] move : knightMoves) {
@@ -221,7 +219,7 @@ public class ChessPiece {
 
 
     private Set<ChessMove> rookMoves(ChessBoard board, ChessPosition myPosition) {
-        // horizontal moves for rook
+        // horizontal/vertical moves for rook
         int[][] directions = {
                 {-1, 0},
                 {1, 0},
@@ -237,22 +235,60 @@ public class ChessPiece {
 
         // initial move is white
         int direction = 0;
+        int startRow = 0;
+        int promotionRow = 0;
         if (pieceColor == ChessGame.TeamColor.WHITE) {
             direction = 1;
+            startRow = 2;
+            promotionRow = 8;
         } else {
             direction = -1;
+            startRow = 7;
+            promotionRow = 1;
         }
 
         ChessPosition moveOne = new ChessPosition(myPosition.getRow() + direction, myPosition.getColumn());
         // if the space is empty, move one step forward
+        if (board.getPiece(moveOne) == null) {
+            moves.add(new ChessMove(myPosition, moveOne, null));
 
-        ChessPosition moveTwo = new ChessPosition(myPosition.getRow() + 2*direction, myPosition.getColumn());
+            // if the pawn is on the starting row, move two if that space is empty
+            ChessPosition moveTwo = new ChessPosition(myPosition.getRow() + (2*direction), myPosition.getColumn());
+            if (myPosition.getRow() == startRow) {
+                if (board.getPiece(moveTwo) == null) {
+                    moves.add(new ChessMove(myPosition, moveTwo, null));
+                }
+            }
+        }
+
+        // handle diagonal move & capture opponent
+        int[] diagDirections = {-1, 1};
+        for (int direc : diagDirections) {
+            ChessPosition capturePos = new ChessPosition(myPosition.getRow() + direction, myPosition.getColumn() + direc);
+            if (board.getPiece(capturePos) != null && board.getPiece(capturePos).getTeamColor() != pieceColor) {
+                moves.add(new ChessMove(myPosition, capturePos, null));
+
+
+                if (capturePos.getRow() == promotionRow) {
+                    helperPromotion(myPosition, capturePos, moves);
+                }
+            }
+
+            if (moveOne.getRow() == promotionRow || (board.getPiece(capturePos) != null && capturePos.getRow() == promotionRow)) {
+                helperPromotion(myPosition, moveOne, moves);
+            }
+        }
 
         return moves;
     }
 
-
-
+    private void helperPromotion(ChessPosition start, ChessPosition end, Set<ChessMove> moves) {
+        // promotions -> pawn can become either a queen, rook, knight or bishop
+        moves.add(new ChessMove(start, end, PieceType.QUEEN));
+        moves.add(new ChessMove(start, end, PieceType.ROOK));
+        moves.add(new ChessMove(start, end, PieceType.KNIGHT));
+        moves.add(new ChessMove(start, end, PieceType.BISHOP));
+    }
 
 }
 
