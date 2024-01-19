@@ -250,7 +250,11 @@ public class ChessPiece {
         ChessPosition moveOne = new ChessPosition(myPosition.getRow() + direction, myPosition.getColumn());
         // if the space is empty, move one step forward
         if (board.getPiece(moveOne) == null) {
-            moves.add(new ChessMove(myPosition, moveOne, null));
+            if (moveOne.getRow() == promotionRow) {
+                helperPromotion(myPosition, moveOne, moves); // become a promotion piece
+            } else {
+                moves.add(new ChessMove(myPosition, moveOne, null));
+            }
 
             // if the pawn is on the starting row, move two if that space is empty
             ChessPosition moveTwo = new ChessPosition(myPosition.getRow() + (2*direction), myPosition.getColumn());
@@ -266,17 +270,13 @@ public class ChessPiece {
         for (int direc : diagDirections) {
             ChessPosition capturePos = new ChessPosition(myPosition.getRow() + direction, myPosition.getColumn() + direc);
             if (board.getPiece(capturePos) != null && board.getPiece(capturePos).getTeamColor() != pieceColor) {
-                moves.add(new ChessMove(myPosition, capturePos, null));
-
-
                 if (capturePos.getRow() == promotionRow) {
-                    helperPromotion(myPosition, capturePos, moves);
+                    helperPromotion(myPosition, capturePos, moves);  // promotion moves for capture
+                } else {
+                    moves.add(new ChessMove(myPosition, capturePos, null));  // regular capture
                 }
             }
 
-            if (moveOne.getRow() == promotionRow || (board.getPiece(capturePos) != null && capturePos.getRow() == promotionRow)) {
-                helperPromotion(myPosition, moveOne, moves);
-            }
         }
 
         return moves;
