@@ -125,7 +125,6 @@ public class ChessPiece {
                     break; // stop if path is blocked
                 }
 
-                //
                 moves.add(new ChessMove(myPosition, newPos, null));
 
                 if (!longerMove) {
@@ -183,7 +182,7 @@ public class ChessPiece {
     private Set<ChessMove> knightMoves(ChessBoard board, ChessPosition myPosition) {
         // special moves -> L shape, same capture logic
 
-        Set<ChessMove> validMoves = new HashSet<>();
+        Set<ChessMove> moves = new HashSet<>();
         int currentRow = myPosition.getRow();
         int currentCol = myPosition.getColumn();
 
@@ -206,12 +205,12 @@ public class ChessPiece {
 
                 // add move if new position is empty or occupied by an opponent's piece
                 if (pieceAtNewPos == null || pieceAtNewPos.getTeamColor() != this.getTeamColor()) {
-                    validMoves.add(new ChessMove(myPosition, newPos, null));
+                    moves.add(new ChessMove(myPosition, newPos, null));
                 }
             }
         }
 
-        return validMoves;
+        return moves;
     }
 
 
