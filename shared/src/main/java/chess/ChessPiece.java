@@ -94,11 +94,8 @@ public class ChessPiece {
             case PAWN:
                 return pawnMoves(board, myPosition);
         }
-        throw new RuntimeException("Piece Type Unknown");
+        throw new RuntimeException("Problem with move instruction");
     }
-
-
-    // implement private functions for each chess piece move
 
     // generic move function, excluding knight moves and pawn moves
     private Set<ChessMove> genericPieceMoves(ChessBoard board, ChessPosition myPosition, int[][] directions, boolean longerMove) {
@@ -114,7 +111,7 @@ public class ChessPiece {
                 newCol += direction[1];  // col direction offset
 
                 if (newRow < 1 || newRow > 8 || newCol < 1 || newCol > 8) {
-                    break; // break if not in the board boundaries
+                    break; // break if outside boundaries
                 }
 
                 ChessPosition newPos = new ChessPosition(newRow, newCol);
@@ -192,10 +189,10 @@ public class ChessPiece {
 
         // L moves for a knight
         int[][] knightMoves = {
-                {-2, -1}, {-2, 1},  // upwards L-moves
-                {-1, -2}, {-1, 2},  // left and Right L-moves
-                {1, -2},  {1, 2},   // left and Right L-moves
-                {2, -1},  {2, 1}    // downwards L-moves
+                {-2, -1}, {-2, 1},  // upwards L
+                {-1, -2}, {-1, 2},  // left and right L
+                {1, -2},  {1, 2},   // left and right L
+                {2, -1},  {2, 1}    // downwards L
         };
 
         for (int[] move : knightMoves) {
@@ -230,7 +227,7 @@ public class ChessPiece {
     }
 
     private Set<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPosition) {
-        // special logic for pawn -> promotion pieces, two-step move from start, forward movement no capture, only diagonal capture
+        // todo: special logic for pawn -> promotion pieces, two-step move from start, forward movement no capture, only diagonal capture
         Set<ChessMove> moves = new HashSet<>();
 
         // initial move is white
