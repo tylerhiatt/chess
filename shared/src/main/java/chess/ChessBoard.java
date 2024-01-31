@@ -38,6 +38,13 @@ public class ChessBoard {
         board = new ChessPiece[8][8];
     }
 
+    public void simulateMove(ChessMove move) {
+        ChessPiece piece = getPiece(move.getStartPosition());
+
+        addPiece(move.getEndPosition(), piece);
+        addPiece(move.getStartPosition(), null);
+    }
+
     /**
      * Adds a chess piece to the chessboard
      *
