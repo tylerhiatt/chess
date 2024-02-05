@@ -10,7 +10,7 @@ import java.util.Arrays;
 public class ChessBoard {
 
     // class attributes
-    private final ChessPiece[][] board;
+    ChessPiece[][] board;
 
     // override equals, hashcode and to string methods
     @Override
@@ -35,14 +35,14 @@ public class ChessBoard {
 
     public ChessBoard() {
         // initialize chess board array
-        board = new ChessPiece[8][8];
+        this.board = new ChessPiece[8][8];
     }
 
-    public void simulateMove(ChessMove move) {
-        ChessPiece piece = getPiece(move.getStartPosition());
+    public void simulateMove(ChessBoard tempBoard, ChessMove move) {
+        ChessPiece piece = tempBoard.getPiece(move.getStartPosition());
 
-        addPiece(move.getEndPosition(), piece);
-        addPiece(move.getStartPosition(), null);
+        tempBoard.addPiece(move.getEndPosition(), piece);
+        tempBoard.addPiece(move.getStartPosition(), null);
     }
 
     /**

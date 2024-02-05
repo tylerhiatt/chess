@@ -226,7 +226,6 @@ public class ChessPiece {
     }
 
     private Set<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPosition) {
-        // todo: special logic for pawn -> promotion pieces, two-step move from start, forward movement no capture, only diagonal capture
         Set<ChessMove> moves = new HashSet<>();
 
         // initial move is white
