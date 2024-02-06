@@ -69,32 +69,32 @@ public class ChessGame {
             if (!tempIsInCheck(temp, piece.getTeamColor())) {
                 legalMoves.add(move);
             }
-
         }
 
         return legalMoves;
     }
 
-    private ChessBoard copyBoard(ChessBoard ogBoard) {
+    private ChessBoard copyBoard(ChessBoard originalBoard) {
         ChessBoard copy = new ChessBoard();
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
                 ChessPosition position = new ChessPosition(row, col);
-                ChessPiece ogPiece = ogBoard.getPiece(position);
-                copy.addPiece(position, ogPiece); // same piece as og piece
+                ChessPiece originalPiece = originalBoard.getPiece(position);
+
+                copy.addPiece(position, originalPiece); // same piece as og piece
             }
         }
         return copy;
     }
 
-    private ChessPosition findKingPosition(ChessBoard myBoard, TeamColor teamColor) {
+    private ChessPosition findKingPosition(ChessBoard currentBoard, TeamColor teamColor) {
         // need to account for tests where there's just one king on the board -> don't assume purely conventional setup
         ChessPosition kingPosition = null;
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
 
                 ChessPosition position = new ChessPosition(row, col);
-                ChessPiece piece = myBoard.getPiece(position);
+                ChessPiece piece = currentBoard.getPiece(position);
 
                 if (piece != null && piece.getPieceType() == ChessPiece.PieceType.KING) {
                     if (piece.getTeamColor() == teamColor) {
@@ -110,18 +110,16 @@ public class ChessGame {
         } else {
             return null;
         }
-
-        //throw new IllegalStateException("King not found for " + teamColor + " team"); // shouldn't happen lol
     }
 
-    private boolean isPositionUnderAttack(ChessPosition position, ChessBoard myBoard, TeamColor opponentColor) {
+    private boolean isPositionUnderAttack(ChessPosition position, ChessBoard currentBoard, TeamColor opponentColor) {
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
                 ChessPosition currentPos = new ChessPosition(row, col);
-                ChessPiece currentPiece = myBoard.getPiece(currentPos);
+                ChessPiece currentPiece = currentBoard.getPiece(currentPos);
 
                 if (currentPiece != null && currentPiece.getTeamColor() == opponentColor) {
-                    Collection<ChessMove> moves = currentPiece.pieceMoves(myBoard, currentPos);
+                    Collection<ChessMove> moves = currentPiece.pieceMoves(currentBoard, currentPos);
                     for (ChessMove move : moves) {
                         if (move.getEndPosition().equals(position)) {
                             return true; // position is under attack by an opponent's piece
@@ -176,8 +174,10 @@ public class ChessGame {
         board.addPiece(move.getStartPosition(), null); // get rid of piece at starting pos
 
         // pawn promotion
+        int blackPromoRow = 1;
+        int whitePromoRow = 8;
         if (currentPiece.getPieceType() == ChessPiece.PieceType.PAWN) {
-            if ((teamTurn == TeamColor.WHITE && move.getEndPosition().getRow() == 8) || (teamTurn == TeamColor.BLACK && move.getEndPosition().getRow() == 1)) {
+            if ((teamTurn == TeamColor.WHITE && move.getEndPosition().getRow() == whitePromoRow) || (teamTurn == TeamColor.BLACK && move.getEndPosition().getRow() == blackPromoRow)) {
                 board.addPiece(move.getEndPosition(), new ChessPiece(teamTurn, move.getPromotionPiece()));
             }
         }
