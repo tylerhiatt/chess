@@ -82,7 +82,6 @@ public class ChessGame {
                 ChessPosition position = new ChessPosition(row, col);
                 ChessPiece ogPiece = ogBoard.getPiece(position);
                 copy.addPiece(position, ogPiece); // same piece as og piece
-
             }
         }
         return copy;
@@ -100,13 +99,13 @@ public class ChessGame {
                 if (piece != null && piece.getPieceType() == ChessPiece.PieceType.KING) {
                     if (piece.getTeamColor() == teamColor) {
                         return position;
-                    } else if (kingPosition == null) {
+                    } else if (kingPosition == null) {  // accounts for test case where there's just one king on opposing team
                         kingPosition = position;
                     }
                 }
             }
         }
-        if (kingPosition != null) {
+        if (kingPosition != null) {  // accounts for test case where there's no kings on the board
             return kingPosition;
         } else {
             return null;
@@ -131,15 +130,26 @@ public class ChessGame {
                 }
             }
         }
-        return false; // No opponent's piece can capture at that position
+        return false;
     }
 
     private boolean tempIsInCheck(ChessBoard tempBoard, TeamColor teamColor) {
         ChessPosition kingPosition = findKingPosition(tempBoard, teamColor);
         if (kingPosition == null) {
-            return false;
+            return false;  // deal with test cases where there's no king on board
         }
-        return isPositionUnderAttack(kingPosition, tempBoard, teamColor == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE);
+        // update game turn
+        teamColor = updateGameTurn(teamColor);
+        return isPositionUnderAttack(kingPosition, tempBoard, teamColor);
+    }
+
+    private TeamColor updateGameTurn(TeamColor teamColor) {
+        if (teamColor == TeamColor.WHITE) {
+            teamColor = TeamColor.BLACK;
+        } else {
+            teamColor = TeamColor.WHITE;
+        }
+        return teamColor;
     }
 
     /**
@@ -151,7 +161,7 @@ public class ChessGame {
     public void makeMove(ChessMove move) throws InvalidMoveException {
         // check to make sure it's correct team's turn
         ChessPiece currentPiece = board.getPiece(move.getStartPosition());
-        if (currentPiece == null || currentPiece.getTeamColor() != teamTurn) {
+        if (currentPiece.getTeamColor() != teamTurn) {
             throw new InvalidMoveException("Invalid Move -> not your turn yet");
         }
 
@@ -161,13 +171,6 @@ public class ChessGame {
             throw new InvalidMoveException("Invalid Move -> move not allowed for this piece");
         }
 
-        // check move on temp board first
-        ChessBoard temp = copyBoard(getBoard());
-        temp.simulateMove(temp, move);
-        if(tempIsInCheck(temp, getTeamTurn())) {
-            throw new InvalidMoveException("Invalid Move -> can't put king in check");
-        }
-
         // make the move here
         board.addPiece(move.getEndPosition(), currentPiece);
         board.addPiece(move.getStartPosition(), null); // get rid of piece at starting pos
@@ -175,16 +178,12 @@ public class ChessGame {
         // pawn promotion
         if (currentPiece.getPieceType() == ChessPiece.PieceType.PAWN) {
             if ((teamTurn == TeamColor.WHITE && move.getEndPosition().getRow() == 8) || (teamTurn == TeamColor.BLACK && move.getEndPosition().getRow() == 1)) {
-
-                if (move.getPromotionPiece() == null) {
-                    throw new InvalidMoveException("Need to know which piece the pawn is promoting to");
-                }
                 board.addPiece(move.getEndPosition(), new ChessPiece(teamTurn, move.getPromotionPiece()));
             }
         }
 
         // update game turn
-        teamTurn = (teamTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
+        teamTurn = updateGameTurn(teamTurn);
 
     }
 
@@ -195,8 +194,6 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-//        ChessPosition kingPos = findKingPosition(getBoard(), teamColor);
-//        return isPositionUnderAttack(kingPos, getBoard(), teamColor);
         return tempIsInCheck(this.board, teamColor);
     }
 
@@ -224,7 +221,7 @@ public class ChessGame {
                 }
             }
         }
-        teamTurn = (teamTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
+        teamTurn = updateGameTurn(teamColor);
 
         return true;  // checkmate
     }
@@ -238,8 +235,7 @@ public class ChessGame {
      */
     public boolean isInStalemate(TeamColor teamColor) {
         // if no valid moves if not in checkmate, then stalemate
-
-        if (isInCheck(teamColor) || isInCheckmate(teamColor)) {
+        if (isInCheck(teamColor)) {
             return false;
         }
 
@@ -249,7 +245,6 @@ public class ChessGame {
                 ChessPiece piece = board.getPiece(pos);
 
                 if (piece != null && piece.getTeamColor() == teamColor) {
-
                     if(!validMoves(pos).isEmpty()) {
                         return false; // found move to get king out of check
                     }
@@ -259,7 +254,7 @@ public class ChessGame {
             }
         }
         // update team turn
-        teamTurn = (teamTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
+        teamTurn = updateGameTurn(teamColor);
 
         return true;
     }
