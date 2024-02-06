@@ -108,9 +108,11 @@ public class ChessGame {
         }
         if (kingPosition != null) {
             return kingPosition;
+        } else {
+            return null;
         }
 
-        throw new IllegalStateException("King not found for " + teamColor + " team"); // shouldn't happen lol
+        //throw new IllegalStateException("King not found for " + teamColor + " team"); // shouldn't happen lol
     }
 
     private boolean isPositionUnderAttack(ChessPosition position, ChessBoard myBoard, TeamColor opponentColor) {
@@ -133,8 +135,10 @@ public class ChessGame {
     }
 
     private boolean tempIsInCheck(ChessBoard tempBoard, TeamColor teamColor) {
-        // TeamColor opponentColor = teamTurn == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
         ChessPosition kingPosition = findKingPosition(tempBoard, teamColor);
+        if (kingPosition == null) {
+            return false;
+        }
         return isPositionUnderAttack(kingPosition, tempBoard, teamColor == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE);
     }
 
