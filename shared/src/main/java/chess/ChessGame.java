@@ -95,14 +95,14 @@ public class ChessGame {
 
                 ChessPosition position = new ChessPosition(row, col);
                 ChessPiece piece = myBoard.getPiece(position);
-                if (piece != null && piece.getPieceType() == ChessPiece.PieceType.KING ) {
-                    // && piece.getTeamColor() == teamColor
-                    return position;
+
+                if (piece != null && piece.getPieceType() == ChessPiece.PieceType.KING && piece.getTeamColor() == teamColor) {
+                        return position;
                 }
             }
         }
 
-        throw new IllegalStateException("King not found for " + teamColor + "team"); // shouldn't happen lol
+        throw new IllegalStateException("King not found for " + teamColor + " team"); // shouldn't happen lol
     }
 
     private boolean isPositionUnderAttack(ChessPosition position, ChessBoard myBoard, TeamColor opponentColor) {
@@ -125,6 +125,7 @@ public class ChessGame {
     }
 
     private boolean tempIsInCheck(ChessBoard tempBoard, TeamColor teamColor) {
+        // TeamColor opponentColor = teamTurn == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
         ChessPosition kingPosition = findKingPosition(tempBoard, teamColor);
         return isPositionUnderAttack(kingPosition, tempBoard, teamColor == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE);
     }
@@ -161,8 +162,7 @@ public class ChessGame {
 
         // pawn promotion
         if (currentPiece.getPieceType() == ChessPiece.PieceType.PAWN) {
-            if ((teamTurn == TeamColor.WHITE && move.getEndPosition().getRow() == 8) ||
-                    (teamTurn == TeamColor.BLACK && move.getEndPosition().getRow() == 1)) {
+            if ((teamTurn == TeamColor.WHITE && move.getEndPosition().getRow() == 8) || (teamTurn == TeamColor.BLACK && move.getEndPosition().getRow() == 1)) {
 
                 if (move.getPromotionPiece() == null) {
                     throw new InvalidMoveException("Need to know which piece the pawn is promoting to");
@@ -173,12 +173,6 @@ public class ChessGame {
 
         // update game turn
         teamTurn = (teamTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
-
-//        if (getTeamTurn() == TeamColor.WHITE) {
-//            setTeamTurn(TeamColor.BLACK);
-//        } else {
-//            setTeamTurn(TeamColor.WHITE);
-//        }
 
     }
 
@@ -218,6 +212,8 @@ public class ChessGame {
                 }
             }
         }
+        teamTurn = (teamTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
+
         return true;  // checkmate
     }
 
@@ -231,25 +227,27 @@ public class ChessGame {
     public boolean isInStalemate(TeamColor teamColor) {
         // if no valid moves if not in checkmate, then stalemate
 
-        if (isInCheck(teamColor)) {
+        if (isInCheck(teamColor) || isInCheckmate(teamColor)) {
             return false;
         }
 
-        // if (!isInCheckmate(teamColor)) {
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
                 ChessPosition pos = new ChessPosition(row, col);
                 ChessPiece piece = board.getPiece(pos);
 
                 if (piece != null && piece.getTeamColor() == teamColor) {
-                    Collection<ChessMove> moves = validMoves(pos);
-                    if(!moves.isEmpty()) {
-                        return false;  // found legal move to get king out of check
+
+                    if(!validMoves(pos).isEmpty()) {
+                        return false; // found move to get king out of check
                     }
+
+
                 }
             }
         }
-        // }
+        // update team turn
+        teamTurn = (teamTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
 
         return true;
     }

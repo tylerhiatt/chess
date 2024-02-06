@@ -40,9 +40,11 @@ public class ChessBoard {
 
     public void simulateMove(ChessBoard tempBoard, ChessMove move) {
         ChessPiece piece = tempBoard.getPiece(move.getStartPosition());
+        if (piece != null) {
+            tempBoard.addPiece(move.getEndPosition(), piece);
+            tempBoard.addPiece(move.getStartPosition(), null);
+        }
 
-        tempBoard.addPiece(move.getEndPosition(), piece);
-        tempBoard.addPiece(move.getStartPosition(), null);
     }
 
     /**
