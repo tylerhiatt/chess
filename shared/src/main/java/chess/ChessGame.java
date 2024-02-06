@@ -55,19 +55,18 @@ public class ChessGame {
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessPiece piece = board.getPiece(startPosition);
 
-        if (piece == null || piece.getTeamColor() != teamTurn) {
-            return new HashSet<>(); // empty hashset to show that no moves are legal
-        }
-
-        Collection<ChessMove> possibleMoves = piece.pieceMoves(board, startPosition);
+        Collection<ChessMove> possibleMoves = new HashSet<>();
         Collection<ChessMove> legalMoves = new HashSet<>();
+
+        if (piece != null) {
+            possibleMoves = piece.pieceMoves(board, startPosition);
+        }
 
         for (ChessMove move : possibleMoves) {
             ChessBoard temp = copyBoard(board);
             temp.simulateMove(temp, move); // make move on temp board
 
-            if (!tempIsInCheck(temp, teamTurn)) {
-                // or piece.getTeamColor()
+            if (!tempIsInCheck(temp, piece.getTeamColor())) {
                 legalMoves.add(move);
             }
 
@@ -90,16 +89,25 @@ public class ChessGame {
     }
 
     private ChessPosition findKingPosition(ChessBoard myBoard, TeamColor teamColor) {
+        // need to account for tests where there's just one king on the board -> don't assume purely conventional setup
+        ChessPosition kingPosition = null;
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
 
                 ChessPosition position = new ChessPosition(row, col);
                 ChessPiece piece = myBoard.getPiece(position);
 
-                if (piece != null && piece.getPieceType() == ChessPiece.PieceType.KING && piece.getTeamColor() == teamColor) {
+                if (piece != null && piece.getPieceType() == ChessPiece.PieceType.KING) {
+                    if (piece.getTeamColor() == teamColor) {
                         return position;
+                    } else if (kingPosition == null) {
+                        kingPosition = position;
+                    }
                 }
             }
+        }
+        if (kingPosition != null) {
+            return kingPosition;
         }
 
         throw new IllegalStateException("King not found for " + teamColor + " team"); // shouldn't happen lol
