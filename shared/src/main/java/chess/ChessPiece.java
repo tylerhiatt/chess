@@ -261,16 +261,19 @@ public class ChessPiece {
         }
 
         // handle diagonal move & capture opponent
-        int[] diagDirections = {-1, 1};
+        int[] diagDirections = {myPosition.getColumn() - 1, myPosition.getColumn() + 1};
         for (int direc : diagDirections) {
-            ChessPosition capturePos = new ChessPosition(myPosition.getRow() + direction, myPosition.getColumn() + direc);
-            if (board.getPiece(capturePos) != null && board.getPiece(capturePos).getTeamColor() != pieceColor) {
-                if (capturePos.getRow() == promotionRow) {
-                    helperPromotion(myPosition, capturePos, moves);  // promotion moves for capture
-                } else {
-                    moves.add(new ChessMove(myPosition, capturePos, null));  // regular capture
+            if (direc >= 1 && direc <= 8) {
+                ChessPosition capturePos = new ChessPosition(myPosition.getRow() + direction, direc);
+                if (board.getPiece(capturePos) != null && board.getPiece(capturePos).getTeamColor() != pieceColor) {
+                    if (capturePos.getRow() == promotionRow) {
+                        helperPromotion(myPosition, capturePos, moves);  // promotion moves for capture
+                    } else {
+                        moves.add(new ChessMove(myPosition, capturePos, null));  // regular capture
+                    }
                 }
             }
+
 
         }
 
