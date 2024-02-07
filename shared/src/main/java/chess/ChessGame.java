@@ -105,11 +105,8 @@ public class ChessGame {
                 }
             }
         }
-        if (kingPosition != null) {  // accounts for test case where there's no kings on the board
-            return kingPosition;
-        } else {
-            return null;
-        }
+
+        return kingPosition;
     }
 
     private boolean isPositionUnderAttack(ChessPosition position, ChessBoard currentBoard, TeamColor opponentColor) {
