@@ -109,14 +109,15 @@ public class ChessGame {
         return kingPosition;
     }
 
-    private boolean isPositionUnderAttack(ChessPosition position, ChessBoard currentBoard, TeamColor opponentColor) {
+    private boolean isPieceUnderAttack(ChessPosition position, ChessBoard currentBoard, TeamColor opponentColor) {
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
                 ChessPosition currentPos = new ChessPosition(row, col);
-                ChessPiece currentPiece = currentBoard.getPiece(currentPos);
+                ChessPiece piece = currentBoard.getPiece(currentPos);
 
-                if (currentPiece != null && currentPiece.getTeamColor() == opponentColor) {
-                    Collection<ChessMove> moves = currentPiece.pieceMoves(currentBoard, currentPos);
+                if (piece != null && piece.getTeamColor() == opponentColor) {
+                    Collection<ChessMove> moves = piece.pieceMoves(currentBoard, currentPos);
+
                     for (ChessMove move : moves) {
                         if (move.getEndPosition().equals(position)) {
                             return true; // position is under attack by an opponent's piece
@@ -135,7 +136,7 @@ public class ChessGame {
         }
         // update game turn
         teamColor = updateGameTurn(teamColor);
-        return isPositionUnderAttack(kingPosition, tempBoard, teamColor);
+        return isPieceUnderAttack(kingPosition, tempBoard, teamColor);
     }
 
     private TeamColor updateGameTurn(TeamColor teamColor) {
