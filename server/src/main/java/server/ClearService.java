@@ -7,6 +7,6 @@ public class ClearService {
 
     public Result clear() {
         dataAccess.clear();
-        return new Result(true, "Database cleared successfully."); // should throw exception if not
+        return new Result(true, "Database cleared successfully"); // should throw exception if not
     }
 }
