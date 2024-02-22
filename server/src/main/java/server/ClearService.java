@@ -3,10 +3,15 @@ package server;
 import dataAccess.DataAccess;
 
 public class ClearService {
-    private final DataAccess dataAccess = new DataAccess();
 
     public Result clear() {
-        dataAccess.clear();
-        return new Result(true, "Database cleared successfully"); // should throw exception if not
+        DataAccess data = DataAccess.getInstance(); // get correct state
+        try {
+            data.clear();
+            return new Result(true, null, null, null, "Database cleared successfully");
+        } catch (Exception e) {
+            return new Result(false, null, null, Result.ErrorType.SERVER_ERROR, "Database clearing failed");
+        }
+
     }
 }

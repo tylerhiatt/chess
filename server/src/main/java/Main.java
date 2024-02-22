@@ -7,6 +7,7 @@ public class Main {
 //        var piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
 //        System.out.println("♕ 240 Chess Server: " + piece);
 
+        // run server to see if I can hit my endpoints with curl
         Server server = new Server();
         int port = 8080;
         if (args.length > 0 && args[0].equals("test")) {

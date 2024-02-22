@@ -11,6 +11,15 @@ public class DataAccess implements DataAccessInterface {
     private final Map<Integer, GameData> games = new HashMap<>();
     private final Map<String, AuthData> authTokens = new HashMap<>();
     private int nextGameId = 1;
+    private static DataAccess instance = null;
+
+    // keep instance the same across classes
+    public static DataAccess getInstance() {
+        if (instance == null) {
+            instance = new DataAccess();
+        }
+        return instance;
+    }
 
     @Override
     public void clear() {
@@ -20,11 +29,11 @@ public class DataAccess implements DataAccessInterface {
     }
 
     @Override
-    public void createUser(UserData user) throws DataAccessException {
-        if (users.containsKey(user.username())) {
-            throw new DataAccessException("User already exists");
+    public void createUser(UserData userData) throws DataAccessException {
+        if (users.containsKey(userData.username())) {
+            throw new DataAccessException("User already exists: " + userData.username());
         }
-        users.put(user.username(), user);
+        users.put(userData.username(), userData); // puts new user in hashmap
     }
 
     @Override
@@ -54,6 +63,14 @@ public class DataAccess implements DataAccessInterface {
     public List<GameData> listGames() throws DataAccessException {
         return new ArrayList<>(games.values());
     }
+    public List<UserData> listUsers() throws DataAccessException {
+        return new ArrayList<>(users.values());
+    }
+
+    public List<AuthData> listAuth() throws DataAccessException {
+        return new ArrayList<>(authTokens.values());
+    }
+
 
     @Override
     public void updateGame(GameData game) throws DataAccessException {
@@ -64,8 +81,13 @@ public class DataAccess implements DataAccessInterface {
     }
 
     @Override
-    public void createAuth(AuthData auth) throws DataAccessException {
-        authTokens.put(auth.authToken(), auth);
+    public AuthData createAuth(String username) throws DataAccessException {
+        String authToken = UUID.randomUUID().toString();  // generates random string for token
+
+        AuthData newAuth = new AuthData(authToken, username);
+        authTokens.put(authToken, newAuth);
+
+        return newAuth;
     }
 
     @Override
