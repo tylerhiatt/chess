@@ -8,9 +8,9 @@ public class ClearService {
         DataAccess data = DataAccess.getInstance(); // get correct state
         try {
             data.clear();
-            return new Result(true, null, null, null, "Database cleared successfully");
+            return new Result(true, null, null, null, null, "Database cleared successfully");
         } catch (Exception e) {
-            return new Result(false, null, null, Result.ErrorType.SERVER_ERROR, "Database clearing failed");
+            return new Result(false, null, null, null, Result.ErrorType.SERVER_ERROR, "Error: Database clearing failed");
         }
 
     }

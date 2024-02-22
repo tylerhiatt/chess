@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class RegisterServiceTests {
 
     @Test
-    void testRegisterSuccess() {
+    void testRegisterSuccess() {  // positive test
         RegisterService registerService = new RegisterService();
 
         UserData newUser = new UserData("newUser", "aboogaboogabooga", "boii@test.com");
@@ -32,7 +32,7 @@ class RegisterServiceTests {
     }
 
     @Test
-    void testRegisterFail() {
+    void testRegisterFail() {  // negative test
         RegisterService registerService = new RegisterService();
 
         // put in new users
@@ -42,7 +42,7 @@ class RegisterServiceTests {
         UserData userData2 = new UserData("existingUser", "password456", "duplicate@test.com");
         Result result = registerService.register(userData2);
 
-        assertFalse(result.isSuccess(), "Registration should fail for existing username");
-        assertEquals(Result.ErrorType.ALREADY_TAKEN, result.getErrorType(), "Expected ALREADY_TAKEN error type");
+        assertFalse(result.isSuccess()); // should be false for isSuccess
+        assertEquals(Result.ErrorType.ALREADY_TAKEN, result.getErrorType());
     }
 }
