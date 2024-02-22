@@ -1,7 +1,9 @@
 package passoffTests.serverTests;
 
+import dataAccess.DataAccessException;
 import server.Result;
 import model.UserData;
+import dataAccess.DataAccess;
 import org.junit.jupiter.api.Test;
 import server.RegisterService;
 
@@ -13,11 +15,20 @@ class RegisterServiceTests {
     void testRegisterSuccess() {
         RegisterService registerService = new RegisterService();
 
-        UserData userData = new UserData("newUser", "aboogaboogabooga", "boii@test.com");
-        Result result = registerService.register(userData);
+        UserData newUser = new UserData("newUser", "aboogaboogabooga", "boii@test.com");
+        Result result = registerService.register(newUser);
 
         assertTrue(result.isSuccess(), "Registration succeeded");
         assertNotNull(result.getAuthToken(), "Auth token is not null");
+
+        // sanity check
+        try {
+            UserData registeredUser = DataAccess.getInstance().getUser("newUser");
+            assertEquals(newUser.username(), registeredUser.username());
+        } catch (DataAccessException e) {
+            fail("Failed");
+        }
+
     }
 
     @Test
