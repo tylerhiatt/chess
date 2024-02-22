@@ -15,6 +15,7 @@ public class Server {
         clearEndpoint();
         registerEndpoint();
         loginEndpoint();
+        logoutEndpoint();
 
         Spark.awaitInitialization();
         return Spark.port();
@@ -32,7 +33,7 @@ public class Server {
 
             if (result.isSuccess()) {
                 res.status(200);
-                return serializer.toJson(result.getMessage());  // maybe switch to just return nothing?
+                return "";  // return empty body
             } else {
                 res.status(500);
                 return serializer.toJson(new Result.ErrorResponse(result.getMessage()));
@@ -93,6 +94,35 @@ public class Server {
 
             } else {
                 // handle error cases
+                switch (result.getErrorType()) {
+                    case UNAUTHORIZED:
+                        res.status(401);
+                        break;
+                    case SERVER_ERROR:
+                    default:
+                        res.status(500);
+                        break;
+                }
+                return serializer.toJson(new Result.ErrorResponse(result.getMessage()));
+            }
+
+        });
+    }
+
+    // endpoint for logging out user
+    private void logoutEndpoint() {
+        Spark.delete("/session", (req, res) -> {
+            var serializer = new Gson();
+            String authToken = req.headers("authorization");
+            LogoutService logoutService = new LogoutService();
+
+            Result result = logoutService.logout(authToken);
+            res.type("application/json");
+
+            if (result.isSuccess()) {
+                res.status(200);
+                return "";  // return empty body
+            } else {
                 switch (result.getErrorType()) {
                     case UNAUTHORIZED:
                         res.status(401);

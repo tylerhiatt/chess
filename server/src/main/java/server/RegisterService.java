@@ -26,7 +26,7 @@ public class RegisterService {
             // add 400 errors here
 
         } catch (DataAccessException e) {
-            return Result.error(Result.ErrorType.SERVER_ERROR, "Error: Registration failed due to a server error"); // 500
+            return Result.error(Result.ErrorType.SERVER_ERROR, "Error: description"); // 500
         }
     }
 

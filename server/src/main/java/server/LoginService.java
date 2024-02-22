@@ -22,7 +22,7 @@ public class LoginService {
             }
 
         } catch (DataAccessException e) {
-            return Result.error(Result.ErrorType.SERVER_ERROR, "Error: Login failed due to server error"); // 500
+            return Result.error(Result.ErrorType.SERVER_ERROR, "Error: description"); // 500
         }
     }
 }

@@ -10,12 +10,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class LoginServiceTests {
 
-    private final LoginService loginService = new LoginService(); // Assuming you have a LoginService
+    private final LoginService loginService = new LoginService();
     private final RegisterService registerService = new RegisterService();
 
     @Test
     void testLoginSuccess() { // positive test case
-        // Assuming you have a method to add a user before testing login
         UserData userData = new UserData("testUser", "testPassword", "testEmail@example.com");
         registerService.register(userData); // add user to data
 
@@ -29,7 +28,7 @@ class LoginServiceTests {
     @Test
     void testLoginIncorrectPassword() {  // negative test case
         UserData userData = new UserData("testUser", "correctPassword", "testEmail@example.com");
-        registerService.register(userData); // Setup test user
+        registerService.register(userData); //  add user to data
 
         Result loginResult = loginService.login(new UserData("testUser", "wrongPassword", null));
 

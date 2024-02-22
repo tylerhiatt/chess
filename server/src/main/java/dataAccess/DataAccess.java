@@ -93,10 +93,10 @@ public class DataAccess implements DataAccessInterface {
     @Override
     public AuthData getAuth(String authToken) throws DataAccessException {
         AuthData auth = authTokens.get(authToken);
-        if (auth == null) {
-            throw new DataAccessException("Cannot get auth token");
-        }
-        return auth;
+//        if (auth == null) {
+//            throw new DataAccessException("Cannot get auth token");
+//        }
+        return auth; // allowed to return null
     }
 
     @Override

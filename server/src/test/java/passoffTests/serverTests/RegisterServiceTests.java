@@ -37,7 +37,7 @@ class RegisterServiceTests {
 
         // put in new users
         UserData userData1 = new UserData("existingUser", "password123", "existing@test.com");
-        registerService.register(userData1); // Assuming this succeeds
+        registerService.register(userData1); // assuming this succeeds
 
         UserData userData2 = new UserData("existingUser", "password456", "duplicate@test.com");
         Result result = registerService.register(userData2);
