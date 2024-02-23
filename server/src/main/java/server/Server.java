@@ -11,17 +11,18 @@ public class Server {
 
         Spark.staticFiles.location("web");
 
-        // Register your endpoints and handle exceptions here.
+        // register endpoints here
         clearEndpoint();
         registerEndpoint();
         loginEndpoint();
         logoutEndpoint();
+        listGameEndpoint();
 
         Spark.awaitInitialization();
         return Spark.port();
     }
 
-    // endpoint for clearing the database
+    // handler for clearing the database
     private void clearEndpoint() {
 
         Spark.delete("/db", (req, res) -> {
@@ -42,7 +43,7 @@ public class Server {
         });
     }
 
-    // endpoint for registering user
+    // handler for registering user
     private void registerEndpoint() {
         Spark.post("/user", (req, res) -> {
             var serializer = new Gson();
@@ -77,7 +78,7 @@ public class Server {
         });
     }
 
-    // endpoint for logging in user
+    // handler for logging in user
     private void loginEndpoint() {
         Spark.post("/session", (req, res) -> {
             var serializer = new Gson();
@@ -109,7 +110,7 @@ public class Server {
         });
     }
 
-    // endpoint for logging out user
+    // handler for logging out user
     private void logoutEndpoint() {
         Spark.delete("/session", (req, res) -> {
             var serializer = new Gson();
@@ -122,6 +123,34 @@ public class Server {
             if (result.isSuccess()) {
                 res.status(200);
                 return "";  // return empty body
+            } else {
+                switch (result.getErrorType()) {
+                    case UNAUTHORIZED:
+                        res.status(401);
+                        break;
+                    case SERVER_ERROR:
+                    default:
+                        res.status(500);
+                        break;
+                }
+                return serializer.toJson(new Result.ErrorResponse(result.getMessage()));
+            }
+
+        });
+    }
+
+    // handler for listing games
+    private void listGameEndpoint() {
+        Spark.get("/game", (req, res) -> {
+            var serializer = new Gson();
+            String authToken = req.headers("authorization");
+            ListGameService listGameService = new ListGameService();
+
+            Result result = listGameService.listGame(authToken);
+
+            if (result.isSuccess()) {
+                res.status(200);
+                return serializer.toJson(new Result.LoginSuccessResponse(result.getGames()));
             } else {
                 switch (result.getErrorType()) {
                     case UNAUTHORIZED:
