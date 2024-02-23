@@ -17,6 +17,7 @@ public class Server {
         loginEndpoint();
         logoutEndpoint();
         listGameEndpoint();
+        createGameEndpoint();
 
         Spark.awaitInitialization();
         return Spark.port();
@@ -56,7 +57,7 @@ public class Server {
             // response messages
             if (result.isSuccess()) {
                 res.status(200);
-                return serializer.toJson(new Result.RegisterSuccessResponse(result.getUsername(), result.getAuthToken(), result.getEmail()));
+                return serializer.toJson(new Result.RegisterSuccessResponse(result.getUsername(), result.getAuthToken(), null));
 
             } else {
                 // handle error cases
@@ -147,10 +148,11 @@ public class Server {
             ListGameService listGameService = new ListGameService();
 
             Result result = listGameService.listGame(authToken);
+            res.type("application/json");
 
             if (result.isSuccess()) {
                 res.status(200);
-                return serializer.toJson(new Result.LoginSuccessResponse(result.getGames()));
+                return serializer.toJson(new Result.ListGameSuccessResponse(result.getGames()));
             } else {
                 switch (result.getErrorType()) {
                     case UNAUTHORIZED:
@@ -163,6 +165,41 @@ public class Server {
                 }
                 return serializer.toJson(new Result.ErrorResponse(result.getMessage()));
             }
+
+        });
+    }
+
+    // handler for create game
+    private void createGameEndpoint() {
+        Spark.post("/game", (req, res) -> {
+           var serializer = new Gson();
+           String authToken = req.headers("authorization");
+
+           Result.GameCreationRequest request = serializer.fromJson(req.body(), Result.GameCreationRequest.class);
+           if (request == null || request.gameName == null || request.gameName.trim().isEmpty()) {
+               res.status(400);
+               return serializer.toJson(new Result.ErrorResponse("Error: bad request"));  // handle 400 error here instead
+           }
+
+           CreateGameService createGameService = new CreateGameService();
+           Result result = createGameService.createGame(authToken, request.gameName);
+           res.type("application/json");
+
+           if (result.isSuccess()) {
+               res.status(200);
+               return serializer.toJson(new Result.CreateGameSuccessResponse(result.getGameID()));
+           }  else {
+               switch (result.getErrorType()) {
+                   case UNAUTHORIZED:
+                       res.status(401);
+                       break;
+                   case SERVER_ERROR:
+                   default:
+                       res.status(500);
+                       break;
+               }
+               return serializer.toJson(new Result.ErrorResponse(result.getMessage()));
+           }
 
         });
     }

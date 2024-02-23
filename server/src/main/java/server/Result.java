@@ -12,9 +12,10 @@ public class Result {
     private ErrorType errorType;
     private String email;
     private List<GameData> games;
+    private int gameID;
 
     //// constructors
-    public Result(boolean success, String username, String authToken, String email, ErrorType errorType, String message, List<GameData> games) { // for success
+    public Result(boolean success, String username, String authToken, String email, ErrorType errorType, String message, List<GameData> games, int gameID) { // for success
         this.success = success;
         this.authToken = authToken;
         this.username = username;
@@ -22,21 +23,28 @@ public class Result {
         this.errorType = errorType;
         this.message = message;
         this.games = games;
+        this.gameID = gameID;
+
     }
 
-    // success result method
-    public static Result success(String username, String authToken, String email) {
-        return new Result(true, username, authToken, email,null, null, null);
-    }
-
-    // error result method
-    public static Result error(ErrorType errorType, String message) {
-        return new Result(false, null, null, null, errorType, message, null);
+    // success result register and login
+    public static Result successRegisterAndLogin(String username, String authToken, String email) {
+        return new Result(true, username, authToken, email,null, null, null, 0);
     }
 
     // success result list games
     public static Result successListGames(List<GameData> games) {
-        return new Result(true, null, null, null, null, null, games);
+        return new Result(true, null, null, null, null, null, games, 0);
+    }
+
+    // success creating game
+    public static Result successCreateGame(int gameID) {
+        return new Result(true, null, null, null, null, null, null, gameID);
+    }
+
+    // error result
+    public static Result error(ErrorType errorType, String message) {
+        return new Result(false, null, null, null, errorType, message, null, 0);
     }
 
     //// Getters
@@ -61,6 +69,7 @@ public class Result {
         return errorType;
     }
     public List<GameData> getGames() { return games; }
+    public int getGameID() {return gameID; }
 
     // enum for errors
     public enum ErrorType {
@@ -81,11 +90,24 @@ public class Result {
         }
     }
 
-    public static class LoginSuccessResponse {
+    public static class ListGameSuccessResponse {
         private final List<GameData> games;
-        public LoginSuccessResponse(List<GameData> games) {
+        public ListGameSuccessResponse(List<GameData> games) {
             this.games = games;
         }
+    }
+
+    public static class CreateGameSuccessResponse {
+        private final int gameID;
+
+        public CreateGameSuccessResponse(int gameID){
+            this.gameID = gameID;
+        }
+
+    }
+
+    public static class GameCreationRequest {
+        String gameName;
     }
 
     public static class ErrorResponse {

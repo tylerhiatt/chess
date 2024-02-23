@@ -20,7 +20,7 @@ public class RegisterService {
                 // register user | he doesn't exist yet
                 data.createUser(userData);
                 AuthData authData = data.createAuth(userData.username());
-                return Result.success(userData.username(), authData.authToken(), userData.email()); // 200
+                return Result.successRegisterAndLogin(userData.username(), authData.authToken(), userData.email()); // 200
             }
 
             // add 400 errors here

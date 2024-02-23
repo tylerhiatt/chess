@@ -19,7 +19,7 @@ class ListGameServiceTests {
     private String validAuthToken;
 
     @Test
-    public void testListGamesSuccess() {
+    public void testListGamesSuccess() {  // positive test case
         GameData game1 = new GameData(1, "white1", "black1", "Game 1", null);
         GameData game2 = new GameData(2, "white2", "black2", "Game 2", null);
 
@@ -48,7 +48,7 @@ class ListGameServiceTests {
     }
 
     @Test
-    public void testListGamesUnauthorized() {
+    public void testListGamesUnauthorized() {  // negative test case
         Result result = listGameService.listGame("invalid_auth_token");
 
         assertFalse(result.isSuccess());

@@ -16,7 +16,7 @@ public class LoginService {
             if (user != null && user.password().equals(userData.password())) {
                 // create new token for user
                 AuthData authData = data.createAuth(userData.username());
-                return Result.success(userData.username(), authData.authToken(), null);  // 200
+                return Result.successRegisterAndLogin(userData.username(), authData.authToken(), null);  // 200
             } else {
                 return Result.error(Result.ErrorType.UNAUTHORIZED, "Error: unauthorized"); // 401
             }

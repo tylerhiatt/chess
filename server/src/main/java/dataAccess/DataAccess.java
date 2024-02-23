@@ -45,9 +45,11 @@ public class DataAccess implements DataAccessInterface {
     }
 
     @Override
-    public void createGame(GameData game) throws DataAccessException {
-        game = new GameData(nextGameId++, game.whiteUsername(), game.blackUsername(), game.gameName(), game.game());
-        games.put(game.gameID(), game);
+    public GameData createGame(GameData game) throws DataAccessException {
+        int newGameId = nextGameId++;
+        GameData newGame = new GameData(newGameId, game.whiteUsername(), game.blackUsername(), game.gameName(), game.game());
+        games.put(newGameId, newGame);
+        return newGame;
     }
 
     @Override
@@ -63,10 +65,13 @@ public class DataAccess implements DataAccessInterface {
     public List<GameData> listGames() throws DataAccessException {
         return new ArrayList<>(games.values());
     }
+
+    @Override
     public List<UserData> listUsers() throws DataAccessException {
         return new ArrayList<>(users.values());
     }
 
+    @Override
     public List<AuthData> listAuth() throws DataAccessException {
         return new ArrayList<>(authTokens.values());
     }
