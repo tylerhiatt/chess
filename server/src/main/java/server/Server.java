@@ -18,6 +18,7 @@ public class Server {
         logoutEndpoint();
         listGameEndpoint();
         createGameEndpoint();
+        joinGameEndpoint();
 
         Spark.awaitInitialization();
         return Spark.port();
@@ -200,6 +201,41 @@ public class Server {
                }
                return serializer.toJson(new Result.ErrorResponse(result.getMessage()));
            }
+
+        });
+    }
+
+    private void joinGameEndpoint() {
+        Spark.put("/game", (req, res) -> {
+            var serializer = new Gson();
+            String authToken = req.headers("authorization");
+            Result.JoinGameRequest request = serializer.fromJson(req.body(), Result.JoinGameRequest.class);
+
+            JoinGameService joinGameService = new JoinGameService();
+            Result result = joinGameService.joinGame(authToken, request.gameID, request.playerColor);
+            res.type("application/json");
+
+            if (result.isSuccess()) {
+                res.status(200);
+                return "";  // return empty body
+            } else {
+                switch (result.getErrorType()) {
+                    case BAD_REQUEST:
+                        res.status(400);
+                        break;
+                    case UNAUTHORIZED:
+                        res.status(401);
+                        break;
+                    case ALREADY_TAKEN:
+                        res.status(403);
+                        break;
+                    case SERVER_ERROR:
+                    default:
+                        res.status(500);
+                        break;
+                }
+                return serializer.toJson(new Result.ErrorResponse(result.getMessage()));
+            }
 
         });
     }

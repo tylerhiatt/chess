@@ -14,7 +14,7 @@ public class LogoutService {
             AuthData authData = data.getAuth(authToken);
             if (authData != null) {
                 data.deleteAuth(authToken);
-                return new Result(true, null, null, null, null, "Logout Successful", null, 0);
+                return new Result(true, null, null, null, null, "Logout Successful", null, 0, null);
             } else {
                 return Result.error(Result.ErrorType.UNAUTHORIZED, "Error: unauthorized");
             }

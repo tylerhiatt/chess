@@ -8,7 +8,7 @@ public class ClearService {
         DataAccess data = DataAccess.getInstance(); // get correct state
         try {
             data.clear();
-            return new Result(true, null, null, null, null, "Database cleared successfully", null, 0);  // 200
+            return new Result(true, null, null, null, null, "Database cleared successfully", null, 0, null);  // 200
         } catch (Exception e) {
             return Result.error(Result.ErrorType.SERVER_ERROR, "Error: description");  // 500
         }
