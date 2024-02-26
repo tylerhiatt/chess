@@ -18,7 +18,7 @@ class JoinGameServiceTests {
     String validAuthToken;
 
     @Test
-    void testJoinGameSuccess() {
+    void testJoinGameSuccess() { // positive test
         // register authToken for user and create game
         try {
             UserData user = new UserData("testUser", "testPass", "test@test.com");
@@ -37,7 +37,7 @@ class JoinGameServiceTests {
     }
 
     @Test
-    void testJoinGameUnauthorized() {
+    void testJoinGameUnauthorized() {  // negative test
         String invalidAuthToken = "invalidToken";
         Result result = joinGameService.joinGame(invalidAuthToken, 1, ChessGame.TeamColor.WHITE);
 

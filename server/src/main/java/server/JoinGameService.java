@@ -22,27 +22,38 @@ public class JoinGameService {
                 return Result.error(Result.ErrorType.BAD_REQUEST, "Error: bad request"); // 400
             }
 
-            if (playerColor != null) {
-                if ((playerColor == ChessGame.TeamColor.WHITE && game.whiteUsername() != null) ||
-                        (playerColor == ChessGame.TeamColor.BLACK && game.blackUsername() != null)) {
-                    return Result.error(Result.ErrorType.ALREADY_TAKEN, "Error: already taken");
-                }
-
-                // update gameData with new player's turn
-                GameData updatedGame = null;
-                if (playerColor == ChessGame.TeamColor.WHITE) {
-                    updatedGame = new GameData(game.gameID(), authData.username(), game.blackUsername(), game.gameName(), game.game());
-                } else if (playerColor == ChessGame.TeamColor.BLACK) {
-                    updatedGame = new GameData(game.gameID(), authData.username(), game.whiteUsername(), game.gameName(), game.game());
-                }
-                // assert updatedGame != null;
-                data.updateGame(updatedGame);
+            // ability to join game as a watcher
+            if (playerColor == null) {
+                return Result.genericSuccessService("Joined as a watcher");  // 200
             }
 
-            return new Result(true, null, null, null, null, "Join Game Successful", null, 0, null);
+            // if player already assigned
+            if ((playerColor == ChessGame.TeamColor.WHITE && authData.username().equals(game.whiteUsername())) ||
+                    (playerColor == ChessGame.TeamColor.BLACK && authData.username().equals(game.blackUsername()))) {
+
+                return Result.genericSuccessService("Join Game successful");  // 200
+            }
+
+            // if color is already taken
+            if ((playerColor == ChessGame.TeamColor.WHITE && game.whiteUsername() != null) ||
+                    (playerColor == ChessGame.TeamColor.BLACK && game.blackUsername() != null)) {
+                return Result.error(Result.ErrorType.ALREADY_TAKEN, "Error: already taken");  // 403
+            }
+
+            // Assign player to the game
+            GameData updatedGame;
+            if (playerColor == ChessGame.TeamColor.WHITE) {
+                updatedGame = new GameData(game.gameID(), authData.username(), game.blackUsername(), game.gameName(), game.game());
+            } else {
+                updatedGame = new GameData(game.gameID(), game.whiteUsername(), authData.username(), game.gameName(), game.game());
+            }
+
+            data.updateGame(updatedGame);
+
+            return Result.genericSuccessService("Join Game Successful");  // 200
 
         } catch (DataAccessException e) {
-            return Result.error(Result.ErrorType.SERVER_ERROR, "Error: description");
+            return Result.error(Result.ErrorType.SERVER_ERROR, "Error: description"); // 500
         }
 
 

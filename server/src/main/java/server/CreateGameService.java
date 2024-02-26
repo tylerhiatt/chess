@@ -16,7 +16,7 @@ public class CreateGameService {
                 return Result.error(Result.ErrorType.UNAUTHORIZED, "Error: unauthorized"); // 401
             }
 
-            GameData game = data.createGame(new GameData(0, authData.username(), null, gameName, new ChessGame()));
+            GameData game = data.createGame(new GameData(0, null, null, gameName, new ChessGame()));
             return Result.successCreateGame(game.gameID()); // 200
 
         } catch (DataAccessException e) {

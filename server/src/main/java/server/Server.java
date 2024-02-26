@@ -30,8 +30,8 @@ public class Server {
         Spark.delete("/db", (req, res) -> {
             var serializer = new Gson();
             ClearService clearService = new ClearService();
-            Result result = clearService.clear();
 
+            Result result = clearService.clear();
             res.type("application/json");
 
             if (result.isSuccess()) {

@@ -45,6 +45,10 @@ public class Result {
         return new Result(true, null, null, null, null, null, null, gameID, null);
     }
 
+    public static Result genericSuccessService(String message) {
+        return new Result(true, null, null, null, null, message, null, 0, null);
+    }
+
     // error result
     public static Result error(ErrorType errorType, String message) {
         return new Result(false, null, null, null, errorType, message, null, 0, null);
