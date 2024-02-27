@@ -13,8 +13,6 @@ public interface DataAccessInterface {
     GameData createGame(GameData game) throws DataAccessException;
     GameData getGame(int gameID) throws DataAccessException;
     List<GameData> listGames() throws DataAccessException;
-    List<UserData> listUsers() throws DataAccessException;
-    List<AuthData> listAuth() throws DataAccessException;
     void updateGame(GameData game) throws DataAccessException;
     AuthData createAuth(String username) throws DataAccessException;
     AuthData getAuth(String authToken) throws DataAccessException;

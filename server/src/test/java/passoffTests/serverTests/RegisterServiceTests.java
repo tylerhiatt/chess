@@ -15,7 +15,7 @@ class RegisterServiceTests {
     void testRegisterSuccess() {  // positive test
         RegisterService registerService = new RegisterService();
 
-        UserData newUser = new UserData("newUser", "aboogaboogabooga", "boii@test.com");
+        UserData newUser = new UserData("testUserRegister", "testPassRegister", "register@test.com");
         Result result = registerService.register(newUser);
 
         assertTrue(result.isSuccess(), "Registration succeeded");
@@ -23,7 +23,7 @@ class RegisterServiceTests {
 
         // sanity check
         try {
-            UserData registeredUser = DataAccess.getInstance().getUser("newUser");
+            UserData registeredUser = DataAccess.getInstance().getUser("testUserRegister");
             assertEquals(newUser.username(), registeredUser.username());
         } catch (DataAccessException e) {
             fail("Failed");

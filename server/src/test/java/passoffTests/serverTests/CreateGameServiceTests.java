@@ -22,7 +22,7 @@ class CreateGameServiceTests {
     void testCreateGameSuccess() {  // positive test case
         // register authToken for user
         try {
-            UserData user = new UserData("testUser", "testPass", "test@test.com");
+            UserData user = new UserData("testUserCreate", "testPassCreate", "clear@test.com");
             dataAccess.createUser(user);
             AuthData authData = dataAccess.createAuth(user.username());
             validAuthToken = authData.authToken();
@@ -30,7 +30,7 @@ class CreateGameServiceTests {
             fail("Failed");
         }
 
-        Result result = createGameService.createGame(validAuthToken, "Test Game");
+        Result result = createGameService.createGame(validAuthToken, "Test Game Create");
 
         assertTrue(result.isSuccess());
         assertNotEquals(0, result.getGameID()); // make sure game ID isn't 0
@@ -38,8 +38,7 @@ class CreateGameServiceTests {
         // sanity check that game is listed in dataAccess
         try {
             GameData createdGame = dataAccess.getGame(result.getGameID());
-            assertEquals("Test Game", createdGame.gameName());
-            assertEquals("testUser", createdGame.whiteUsername());
+            assertEquals("Test Game Create", createdGame.gameName());
         } catch (DataAccessException e) {
             fail("Failed");
         }

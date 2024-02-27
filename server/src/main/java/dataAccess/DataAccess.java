@@ -54,28 +54,13 @@ public class DataAccess implements DataAccessInterface {
 
     @Override
     public GameData getGame(int gameID) throws DataAccessException {
-        GameData game = games.get(gameID);
-        if (game == null) {
-            throw new DataAccessException("Game does not exist");
-        }
-        return game;
+        return games.get(gameID);  // allowed to return null, exception handled in joinGameService
     }
 
     @Override
     public List<GameData> listGames() throws DataAccessException {
         return new ArrayList<>(games.values());
     }
-
-    @Override
-    public List<UserData> listUsers() throws DataAccessException {
-        return new ArrayList<>(users.values());
-    }
-
-    @Override
-    public List<AuthData> listAuth() throws DataAccessException {
-        return new ArrayList<>(authTokens.values());
-    }
-
 
     @Override
     public void updateGame(GameData game) throws DataAccessException {
@@ -97,11 +82,7 @@ public class DataAccess implements DataAccessInterface {
 
     @Override
     public AuthData getAuth(String authToken) throws DataAccessException {
-        AuthData auth = authTokens.get(authToken);
-//        if (auth == null) {
-//            throw new DataAccessException("Cannot get auth token");
-//        }
-        return auth; // allowed to return null
+        return authTokens.get(authToken); // allowed to return null
     }
 
     @Override

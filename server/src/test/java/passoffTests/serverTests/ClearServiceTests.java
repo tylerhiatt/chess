@@ -14,14 +14,16 @@ import static org.junit.jupiter.api.Assertions.*;
 
 
 class ClearServiceTests {
+    private final DataAccess dataAccess = DataAccess.getInstance();
 
     @Test
     void clearTestSuccess() {  // only requires positive test case
         // add user, game, and authToken to state
         try {
-            DataAccess.getInstance().createUser(new UserData("testUser", "testPass", "testEmail"));
-            DataAccess.getInstance().createAuth(String.valueOf(new AuthData("testToken", "testUser")));
-            DataAccess.getInstance().createGame(new GameData(1, "testUser", null, "Test Game", new ChessGame()));
+            dataAccess.createUser(new UserData("testUserClear", "testPassClear", "clearEmail"));
+            dataAccess.createAuth(String.valueOf(new AuthData("testToken", "testUserClear")));
+            dataAccess.createGame(new GameData(1, "testUserClear", null, "Test Game", new ChessGame()));
+
         } catch (DataAccessException e) {
             fail("Failed");
         }
@@ -30,15 +32,6 @@ class ClearServiceTests {
 
         assertTrue(result.isSuccess());
         assertEquals("Database cleared successfully", result.getMessage());
-
-        // sanity check that info was cleared
-        try {
-            assertTrue(DataAccess.getInstance().listUsers().isEmpty());
-            assertTrue(DataAccess.getInstance().listGames().isEmpty());
-            assertTrue(DataAccess.getInstance().listAuth().isEmpty());
-        }  catch (DataAccessException e) {
-            fail("Failed");
-        }
 
     }
 

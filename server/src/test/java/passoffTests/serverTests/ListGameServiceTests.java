@@ -7,25 +7,28 @@ import model.AuthData;
 import dataAccess.DataAccess;
 import server.Result;
 import server.ListGameService;
+import server.ClearService;
 
 import org.junit.jupiter.api.Test;
-import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 
 class ListGameServiceTests {
     private final ListGameService listGameService = new ListGameService();
     private final DataAccess dataAccess = DataAccess.getInstance();
+    private final ClearService clearService = new ClearService();
     private String validAuthToken;
 
     @Test
     public void testListGamesSuccess() {  // positive test case
+        clearService.clear();  // make sure starting with empty slate
+
         GameData game1 = new GameData(1, "white1", "black1", "Game 1", null);
         GameData game2 = new GameData(2, "white2", "black2", "Game 2", null);
 
         // register authToken for user
         try {
-            UserData user = new UserData("testUser", "testPass", "test@test.com");
+            UserData user = new UserData("testUserList", "testPassList", "list@test.com");
             dataAccess.createUser(user);
             AuthData authData = dataAccess.createAuth(user.username());
             validAuthToken = authData.authToken();
