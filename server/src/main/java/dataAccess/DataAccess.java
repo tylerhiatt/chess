@@ -31,7 +31,7 @@ public class DataAccess implements DataAccessInterface {
     @Override
     public void createUser(UserData userData) throws DataAccessException {
         if (users.containsKey(userData.username())) {
-            throw new DataAccessException("User already exists: " + userData.username());
+            throw new DataAccessException("User already exists");
         }
         users.put(userData.username(), userData); // puts new user in hashmap
     }

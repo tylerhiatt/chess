@@ -61,20 +61,7 @@ public class Server {
                 return serializer.toJson(new Result.RegisterSuccessResponse(result.getUsername(), result.getAuthToken(), null));
 
             } else {
-                // handle error cases
-                switch (result.getErrorType()) {
-                    case BAD_REQUEST:
-                        res.status(400);
-                        break;
-                    case ALREADY_TAKEN:
-                        res.status(403);
-                        break;
-                    case SERVER_ERROR:
-                    default:
-                        res.status(500);
-                        break;
-                }
-                return serializer.toJson(new Result.ErrorResponse(result.getMessage()));
+                return handleError(res, result, serializer);
             }
 
         });
@@ -96,17 +83,7 @@ public class Server {
                 return serializer.toJson(new Result.RegisterSuccessResponse(result.getUsername(), result.getAuthToken(), null));
 
             } else {
-                // handle error cases
-                switch (result.getErrorType()) {
-                    case UNAUTHORIZED:
-                        res.status(401);
-                        break;
-                    case SERVER_ERROR:
-                    default:
-                        res.status(500);
-                        break;
-                }
-                return serializer.toJson(new Result.ErrorResponse(result.getMessage()));
+                return handleError(res, result, serializer);
             }
 
         });
@@ -126,16 +103,7 @@ public class Server {
                 res.status(200);
                 return "";  // return empty body
             } else {
-                switch (result.getErrorType()) {
-                    case UNAUTHORIZED:
-                        res.status(401);
-                        break;
-                    case SERVER_ERROR:
-                    default:
-                        res.status(500);
-                        break;
-                }
-                return serializer.toJson(new Result.ErrorResponse(result.getMessage()));
+                return handleError(res, result, serializer);
             }
 
         });
@@ -155,16 +123,7 @@ public class Server {
                 res.status(200);
                 return serializer.toJson(new Result.ListGameSuccessResponse(result.getGames()));
             } else {
-                switch (result.getErrorType()) {
-                    case UNAUTHORIZED:
-                        res.status(401);
-                        break;
-                    case SERVER_ERROR:
-                    default:
-                        res.status(500);
-                        break;
-                }
-                return serializer.toJson(new Result.ErrorResponse(result.getMessage()));
+                return handleError(res, result, serializer);
             }
 
         });
@@ -190,16 +149,7 @@ public class Server {
                res.status(200);
                return serializer.toJson(new Result.CreateGameSuccessResponse(result.getGameID()));
            }  else {
-               switch (result.getErrorType()) {
-                   case UNAUTHORIZED:
-                       res.status(401);
-                       break;
-                   case SERVER_ERROR:
-                   default:
-                       res.status(500);
-                       break;
-               }
-               return serializer.toJson(new Result.ErrorResponse(result.getMessage()));
+               return handleError(res, result, serializer);
            }
 
         });
@@ -219,25 +169,29 @@ public class Server {
                 res.status(200);
                 return "";  // return empty body
             } else {
-                switch (result.getErrorType()) {
-                    case BAD_REQUEST:
-                        res.status(400);
-                        break;
-                    case UNAUTHORIZED:
-                        res.status(401);
-                        break;
-                    case ALREADY_TAKEN:
-                        res.status(403);
-                        break;
-                    case SERVER_ERROR:
-                    default:
-                        res.status(500);
-                        break;
-                }
-                return serializer.toJson(new Result.ErrorResponse(result.getMessage()));
+                return handleError(res, result, serializer);
             }
 
         });
+    }
+
+    private String handleError(Response res, Result result, Gson serializer) {
+        switch (result.getErrorType()) {
+            case BAD_REQUEST:
+                res.status(400);
+                break;
+            case UNAUTHORIZED:
+                res.status(401);
+                break;
+            case ALREADY_TAKEN:
+                res.status(403);
+                break;
+            case SERVER_ERROR:
+            default:
+                res.status(500);
+                break;
+        }
+        return serializer.toJson(new Result.ErrorResponse(result.getMessage()));
     }
 
     public void stop() {

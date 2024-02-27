@@ -35,7 +35,7 @@ public class LoginService {
 
 
         } catch (DataAccessException e) {
-            return Result.error(Result.ErrorType.SERVER_ERROR, "Error: description"); // 500
+            return Result.error(Result.ErrorType.SERVER_ERROR, "Error: server error"); // 500
         }
     }
 }

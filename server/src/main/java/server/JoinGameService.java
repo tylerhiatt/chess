@@ -53,7 +53,7 @@ public class JoinGameService {
             return Result.genericSuccessService("Join Game Successful");  // 200
 
         } catch (DataAccessException e) {
-            return Result.error(Result.ErrorType.SERVER_ERROR, "Error: description"); // 500
+            return Result.error(Result.ErrorType.SERVER_ERROR, "Error: server error"); // 500
         }
 
 

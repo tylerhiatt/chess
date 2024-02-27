@@ -21,7 +21,7 @@ public class ListGameService {
             return Result.successListGames(games);
 
         } catch (DataAccessException e) {
-            return Result.error(Result.ErrorType.SERVER_ERROR, "Error: description");
+            return Result.error(Result.ErrorType.SERVER_ERROR, "Error: server error");
         }
     }
 }

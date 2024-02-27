@@ -16,7 +16,6 @@ public class Result {
     private int gameID;
     private ChessGame.TeamColor playerColor;
 
-    //// constructors
     public Result(boolean success, String username, String authToken, String email, ErrorType errorType, String message, List<GameData> games, int gameID, ChessGame.TeamColor playerColor) { // for success
         this.success = success;
         this.authToken = authToken;
@@ -29,6 +28,8 @@ public class Result {
         this.playerColor = playerColor;
 
     }
+
+    //// response results based on service ////
 
     // success result register and login
     public static Result successRegisterAndLogin(String username, String authToken, String email) {
@@ -45,6 +46,7 @@ public class Result {
         return new Result(true, null, null, null, null, null, null, gameID, null);
     }
 
+    // success result
     public static Result genericSuccessService(String message) {
         return new Result(true, null, null, null, null, message, null, 0, null);
     }
@@ -54,7 +56,7 @@ public class Result {
         return new Result(false, null, null, null, errorType, message, null, 0, null);
     }
 
-    //// Getters
+    //// Getters ////
     public boolean isSuccess() {
         return success;
     }
@@ -70,12 +72,13 @@ public class Result {
     public String getAuthToken() {
         return authToken;
     }
-    public String getEmail() { return email; }
 
     public ErrorType getErrorType() {
         return errorType;
     }
+
     public List<GameData> getGames() { return games; }
+
     public int getGameID() {return gameID; }
 
     // enum for errors
@@ -83,7 +86,7 @@ public class Result {
         ALREADY_TAKEN, BAD_REQUEST, SERVER_ERROR, UNAUTHORIZED
     }
 
-    //// static classes for success/error responses for various services
+    //// static classes for success/error responses for various services ////
     public static class RegisterSuccessResponse {
         private final String username;
         private final String authToken;
