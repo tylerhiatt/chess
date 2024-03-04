@@ -1,14 +1,20 @@
 package server;
 
 import com.google.gson.Gson;
+import dataAccess.DatabaseManager;
+import dataAccess.StartDatabase;
 import spark.*;
 import model.UserData;
 
 public class Server {
 
     public int run(int desiredPort) {
-        Spark.port(desiredPort);
 
+        // initialize database and create tables
+        // DatabaseManager databaseManager = new DatabaseManager();
+        StartDatabase.start();
+
+        Spark.port(desiredPort);
         Spark.staticFiles.location("web");
 
         // register endpoints here

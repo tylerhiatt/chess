@@ -1,6 +1,7 @@
 package server;
 
 import dataAccess.DataAccessException;
+import dataAccess.MySQLDataAccess;
 import model.UserData;
 import model.AuthData;
 import dataAccess.DataAccess;
@@ -8,7 +9,8 @@ import dataAccess.DataAccess;
 public class RegisterService {
 
     public Result register(UserData userData) {
-        DataAccess data = DataAccess.getInstance();  // get correct state
+        // DataAccess data = DataAccess.getInstance();  // get correct state
+        MySQLDataAccess data = new MySQLDataAccess();
 
         try {
             // Check for invalid input

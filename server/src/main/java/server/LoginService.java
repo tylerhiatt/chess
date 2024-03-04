@@ -2,13 +2,15 @@ package server;
 
 import dataAccess.DataAccess;
 import dataAccess.DataAccessException;
+import dataAccess.MySQLDataAccess;
 import model.AuthData;
 import model.UserData;
 
 
 public class LoginService {
     public Result login(UserData userData) {
-        DataAccess data = DataAccess.getInstance();  // gets correct state
+        // DataAccess data = DataAccess.getInstance();  // gets correct state
+        MySQLDataAccess data = new MySQLDataAccess();
 
         try {
 

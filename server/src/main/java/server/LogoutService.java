@@ -2,13 +2,15 @@ package server;
 
 import dataAccess.DataAccess;
 import dataAccess.DataAccessException;
+import dataAccess.MySQLDataAccess;
 import model.AuthData;
 
 import javax.xml.crypto.Data;
 
 public class LogoutService {
     public Result logout(String authToken) {
-        DataAccess data = DataAccess.getInstance();  // gets correct state
+        // DataAccess data = DataAccess.getInstance();  // gets correct state
+        MySQLDataAccess data = new MySQLDataAccess();
 
         try {
             AuthData authData = data.getAuth(authToken);
