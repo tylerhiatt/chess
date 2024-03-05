@@ -1,23 +1,32 @@
 package server;
 
 import com.google.gson.Gson;
+import dataAccess.DataAccessException;
 import dataAccess.DatabaseManager;
 import dataAccess.StartDatabase;
 import spark.*;
 import model.UserData;
+
+import java.sql.SQLException;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class Server {
 
     public int run(int desiredPort) {
 
         // initialize database and create tables
-        // DatabaseManager databaseManager = new DatabaseManager();
-        StartDatabase.start();
+        try {
+            DatabaseManager.createDatabase();
+            StartDatabase.start();
+        } catch (DataAccessException e) {
+            fail("Database creation failed");
+        }
 
         Spark.port(desiredPort);
         Spark.staticFiles.location("web");
 
-        // register endpoints here
+        // register endpoints
         clearEndpoint();
         registerEndpoint();
         loginEndpoint();

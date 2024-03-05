@@ -1,5 +1,6 @@
 package dataAccess;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import model.UserData;
 import model.GameData;
@@ -11,22 +12,23 @@ import java.util.*;
 
 public class MySQLDataAccess implements DataAccessInterface {
 
-    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-    private Gson serializer = new Gson();
+    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    private final Gson serializer = new Gson();
 
     @Override
     public void clear() throws DataAccessException {
         // clear all data from tables
         String[] tables = new String[]{"Users", "Games", "AuthTokens"};
         try (Connection connection = DatabaseManager.getConnection()) {
+            // clear each table
             for (String table : tables) {
-                String sql = "DELETE FROM " + table;  // delete from just clears data from table, different from dropping or truncating
+                String sql = "DELETE FROM " + table;  // delete from is different from dropping or truncating
                 try (PreparedStatement statement = connection.prepareStatement(sql)) {
                     statement.executeUpdate();
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Error: unable to clear database");
+            throw new DataAccessException("Error: unable to clear database -> " + e.getMessage());
         }
     }
 
@@ -43,7 +45,7 @@ public class MySQLDataAccess implements DataAccessInterface {
             statement.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DataAccessException("Error: unable to create new users");
+            throw new DataAccessException("Error: unable to create new users -> " + e.getMessage());
         }
     }
 
@@ -65,7 +67,7 @@ public class MySQLDataAccess implements DataAccessInterface {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Error: unable to retrieve user from database");
+            throw new DataAccessException("Error: unable to retrieve user from database -> " + e.getMessage());
         }
     }
 
@@ -97,42 +99,151 @@ public class MySQLDataAccess implements DataAccessInterface {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Error: unable to create game");
+            throw new DataAccessException("Error: unable to create game -> " + e.getMessage());
         }
     }
 
     @Override
     public GameData getGame(int gameID) throws DataAccessException {
-        //
-        return null;
+        // gets game from Game table
+        String sql = "SELECT * FROM Games WHERE gameID = ?";
+        GameData game = null;
+
+        try (Connection connection = DatabaseManager.getConnection();
+            PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setInt(1, gameID);
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                String whiteUsername = resultSet.getString("whiteUsername");
+                String blackUsername = resultSet.getString("blackUsername");
+                String gameName = resultSet.getString("gameName");
+                String gameState = resultSet.getString("gameState");
+                ChessGame chessGame = serializer.fromJson(gameState, ChessGame.class);
+
+                game = new GameData(gameID, whiteUsername, blackUsername, gameName, chessGame);
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Error: unable to get game -> " + e.getMessage());
+        }
+
+        return game;
     }
 
     @Override
     public List<GameData> listGames() throws DataAccessException {
-        //
-        return new ArrayList<>();
+        // list games in Game table
+        List<GameData> games = new ArrayList<>();
+        String sql = "SELECT * FROM Games";
+
+        try (Connection connection = DatabaseManager.getConnection();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql)) {
+
+            while (resultSet.next()) {
+                int gameID = resultSet.getInt("gameID");
+                String whiteUsername = resultSet.getString("whiteUsername");
+                String blackUsername = resultSet.getString("blackUsername");
+                String gameName = resultSet.getString("gameName");
+                String gameState = resultSet.getString("gameState");
+                ChessGame chessGame = serializer.fromJson(gameState, ChessGame.class);
+
+                GameData game = new GameData(gameID, whiteUsername, blackUsername, gameName, chessGame);
+                games.add(game);
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Error: unable to list games -> " + e.getMessage());
+        }
+        return games;
     }
 
     @Override
     public void updateGame(GameData game) throws DataAccessException {
-        //
+        // updates games in Games table
+        String sql = "UPDATE Games SET whiteUsername = ?, blackUsername = ?, gameName = ?, gameState = ? WHERE gameID = ?";
+        String gameStateJson = serializer.toJson(game.game());
+
+        try (Connection connection = DatabaseManager.getConnection();
+            PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, game.whiteUsername());
+            statement.setString(2, game.blackUsername());
+            statement.setString(3, game.gameName());
+            statement.setString(4, gameStateJson);
+            statement.setInt(5, game.gameID());
+
+            int rows = statement.executeUpdate();
+            if (rows == 0) {
+                throw new DataAccessException("Error: updating game failed -> no rows affected");
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Error: unable to update game -> " + e.getMessage());
+        }
+
     }
 
     @Override
     public AuthData createAuth(String username) throws DataAccessException {
-        //
-        return null;
+        // creates auth token for new user in AuthToken table
+        String sql = "INSERT INTO AuthTokens (token, username) VALUES (?, ?)";
+        String authToken = UUID.randomUUID().toString();
+
+        try (Connection connection = DatabaseManager.getConnection();
+            PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, authToken);
+            statement.setString(2, username);
+            int rows = statement.executeUpdate();
+
+            if (rows == 0) {
+                throw new DataAccessException("Error: unable to create auth token -> no rows affected");
+            }
+            return new AuthData(authToken, username);
+        } catch (SQLException e) {
+            throw new DataAccessException("Error: unable to create auth token -> " + e.getMessage());
+        }
     }
 
     @Override
     public AuthData getAuth(String authToken) throws DataAccessException {
-        //
-        return null;
+        // gets auth token from AuthToken table
+        String sql = "SELECT * FROM AuthTokens WHERE token = ?";
+        AuthData authData = null;
+
+        try (Connection connection = DatabaseManager.getConnection();
+            PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, authToken);
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                String username =resultSet.getString("username");
+                authData = new AuthData(authToken, username);
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Error: unable to get auth token -> " + e.getMessage());
+        }
+        return authData;
     }
 
     @Override
     public void deleteAuth(String authToken) throws DataAccessException {
-        //
+        // deletes auth token from AuthToken table
+        String sql = "DELETE FROM AuthTokens WHERE token = ?";
+
+        try (Connection connection = DatabaseManager.getConnection();
+            PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, authToken);
+            int rows = statement.executeUpdate();
+
+            if (rows == 0) {
+                throw new DataAccessException("Error: unable to delete auth token -> no rows affected");
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Error: unable to delete auth token -> " + e.getMessage());
+        }
     }
 
 }
