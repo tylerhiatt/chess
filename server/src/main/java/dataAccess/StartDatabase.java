@@ -9,21 +9,18 @@ public class StartDatabase {
                                                 "id INT AUTO_INCREMENT PRIMARY KEY," +
                                                 "username VARCHAR(255) NOT NULL UNIQUE," +
                                                 "passwordHash VARCHAR(255) NOT NULL," +
-                                                "email VARCHAR(255)," +
-                                                "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);";
+                                                "email VARCHAR(255));";
 
     private static final String CREATE_GAMES_TABLE = "CREATE TABLE IF NOT EXISTS Games (" +
                                                 "gameID INT AUTO_INCREMENT PRIMARY KEY," +
                                                 "whiteUsername VARCHAR(255)," +
                                                 "blackUsername VARCHAR(255)," +
                                                 "gameName VARCHAR(255) NOT NULL," +
-                                                "gameState TEXT," +
-                                                "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);";
+                                                "gameState TEXT);";
 
     private static final String CREATE_AUTH_TABLE = "CREATE TABLE IF NOT EXISTS AuthTokens (" +
                                                     "token VARCHAR(255) PRIMARY KEY," +
                                                     "username VARCHAR(255) NOT NULL," +
-                                                    "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
                                                     "FOREIGN KEY (username) REFERENCES Users(username));";
 
 

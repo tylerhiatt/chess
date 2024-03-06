@@ -7,7 +7,7 @@ public class ClearService {
 
     public Result clear() {
         // DataAccess data = DataAccess.getInstance(); // get correct state
-        MySQLDataAccess data = new MySQLDataAccess();
+        MySQLDataAccess data = MySQLDataAccess.getInstance();
 
         try {
             data.clear();

@@ -10,7 +10,7 @@ import model.GameData;
 public class CreateGameService {
     public Result createGame(String authToken, String gameName) {
         // DataAccess data = DataAccess.getInstance();
-        MySQLDataAccess data = new MySQLDataAccess();
+        MySQLDataAccess data = MySQLDataAccess.getInstance();
 
         try {
             AuthData authData = data.getAuth(authToken);

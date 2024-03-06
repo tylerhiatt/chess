@@ -11,7 +11,7 @@ import java.util.List;
 public class ListGameService {
     public Result listGame(String authToken) {
         // DataAccess data = DataAccess.getInstance(); // gets correct state
-        MySQLDataAccess data = new MySQLDataAccess();
+        MySQLDataAccess data = MySQLDataAccess.getInstance();
 
         try {
             AuthData authData = data.getAuth(authToken);

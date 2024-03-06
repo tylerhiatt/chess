@@ -14,12 +14,26 @@ public class MySQLDataAccess implements DataAccessInterface {
 
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
     private final Gson serializer = new Gson();
+    private static MySQLDataAccess instance = null;
+
+    public static MySQLDataAccess getInstance() {
+        if (instance == null) {
+            instance = new MySQLDataAccess();
+        }
+        return instance;
+    }
 
     @Override
     public void clear() throws DataAccessException {
         // clear all data from tables
         String[] tables = new String[]{"Users", "Games", "AuthTokens"};
         try (Connection connection = DatabaseManager.getConnection()) {
+
+            // disable foreign key checks to avoid constraint violations during clearing -> fixes issue I had when trying to register new users
+            try (PreparedStatement disableFKChecks = connection.prepareStatement("SET FOREIGN_KEY_CHECKS=0;")) {
+                disableFKChecks.executeUpdate();
+            }
+
             // clear each table
             for (String table : tables) {
                 String sql = "DELETE FROM " + table;  // delete from is different from dropping or truncating
@@ -27,6 +41,12 @@ public class MySQLDataAccess implements DataAccessInterface {
                     statement.executeUpdate();
                 }
             }
+
+            // re-enable foreign key checks after clearing is done
+            try (PreparedStatement enableFKChecks = connection.prepareStatement("SET FOREIGN_KEY_CHECKS=1;")) {
+                enableFKChecks.executeUpdate();
+            }
+
         } catch (SQLException e) {
             throw new DataAccessException("Error: unable to clear database -> " + e.getMessage());
         }
@@ -42,6 +62,7 @@ public class MySQLDataAccess implements DataAccessInterface {
 
             statement.setString(1, user.username());
             statement.setString(2, encoder.encode(user.password()));  // encrypts user's password
+            statement.setString(3, user.email());
             statement.executeUpdate();
 
         } catch (SQLException e) {

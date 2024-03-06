@@ -10,21 +10,27 @@ import model.UserData;
 public class LoginService {
     public Result login(UserData userData) {
         // DataAccess data = DataAccess.getInstance();  // gets correct state
-        MySQLDataAccess data = new MySQLDataAccess();
+        MySQLDataAccess data = MySQLDataAccess.getInstance();
 
         try {
 
             // add another try catch block specifically for when the user doesn't exist to pass the tests
-            UserData user;
-            try {
-                user = data.getUser(userData.username());
-
-            } catch (DataAccessException e) {
-                if ("User does not exist".equals(e.getMessage())) {
-                    return Result.error(Result.ErrorType.UNAUTHORIZED, "Error: unauthorized"); // 401
-                } else {
-                    throw e; // if different data access issue, just rethrow it
-                }
+//            UserData user;
+//            try {
+//                user = data.getUser(userData.username());
+//                if (user == null) {
+//                    return Result.error(Result.ErrorType.UNAUTHORIZED, "Error: unauthorized"); // 401
+//                }
+//            } catch (DataAccessException e) {
+//                if ("User does not exist".equals(e.getMessage())) {
+//                    return Result.error(Result.ErrorType.UNAUTHORIZED, "Error: unauthorized"); // 401
+//                } else {
+//                    throw e; // if different data access issue, just rethrow it
+//                }
+//            }
+            UserData user = data.getUser(userData.username());
+            if (user == null) {
+                return Result.error(Result.ErrorType.UNAUTHORIZED, "Error: unauthorized");
             }
 
             if (!user.password().equals(userData.password())) {

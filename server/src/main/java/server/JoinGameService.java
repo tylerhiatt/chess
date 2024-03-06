@@ -11,7 +11,7 @@ import model.GameData;
 public class JoinGameService {
     public Result joinGame(String authToken, int gameID, ChessGame.TeamColor playerColor) {
         // DataAccess data = DataAccess.getInstance();
-        MySQLDataAccess data = new MySQLDataAccess();
+        MySQLDataAccess data = MySQLDataAccess.getInstance();
 
         try {
             AuthData authData = data.getAuth(authToken);

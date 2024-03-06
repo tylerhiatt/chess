@@ -1,6 +1,9 @@
 package passoffTests.serverTests;
 
 import dataAccess.DataAccessException;
+import dataAccess.MySQLDataAccess;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import server.Result;
 import model.UserData;
 import dataAccess.DataAccess;
@@ -11,20 +14,34 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class RegisterServiceTests {
 
+    private MySQLDataAccess dataAccess;
+    private final UserData testUser =  new UserData("testUserRegister", "testPassRegister", "register@test.com");
+
+    @BeforeEach
+    public void setUp() throws Exception {
+        dataAccess = MySQLDataAccess.getInstance();
+
+        dataAccess.clear();
+    }
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        dataAccess.clear();
+    }
+
     @Test
     void testRegisterSuccess() {  // positive test
         RegisterService registerService = new RegisterService();
 
-        UserData newUser = new UserData("testUserRegister", "testPassRegister", "register@test.com");
-        Result result = registerService.register(newUser);
+        Result result = registerService.register(testUser);
 
         assertTrue(result.isSuccess(), "Registration succeeded");
         assertNotNull(result.getAuthToken(), "Auth token is not null");
 
         // sanity check
         try {
-            UserData registeredUser = DataAccess.getInstance().getUser("testUserRegister");
-            assertEquals(newUser.username(), registeredUser.username());
+            UserData registeredUser = dataAccess.getUser("testUserRegister");
+            assertEquals(testUser.username(), registeredUser.username());
         } catch (DataAccessException e) {
             fail("Failed");
         }
