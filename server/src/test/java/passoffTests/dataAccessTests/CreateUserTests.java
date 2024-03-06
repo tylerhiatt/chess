@@ -15,7 +15,6 @@ public class CreateUserTests {
 
     @BeforeEach
     public void setUp() throws Exception {
-        // dataAccess = new MySQLDataAccess();
         dataAccess = MySQLDataAccess.getInstance();
 
         dataAccess.clear();

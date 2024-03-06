@@ -5,6 +5,7 @@ import dataAccess.DataAccessException;
 import dataAccess.MySQLDataAccess;
 import model.AuthData;
 import model.UserData;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 
 public class LoginService {
@@ -15,26 +16,26 @@ public class LoginService {
         try {
 
             // add another try catch block specifically for when the user doesn't exist to pass the tests
-//            UserData user;
-//            try {
-//                user = data.getUser(userData.username());
-//                if (user == null) {
-//                    return Result.error(Result.ErrorType.UNAUTHORIZED, "Error: unauthorized"); // 401
-//                }
-//            } catch (DataAccessException e) {
-//                if ("User does not exist".equals(e.getMessage())) {
-//                    return Result.error(Result.ErrorType.UNAUTHORIZED, "Error: unauthorized"); // 401
-//                } else {
-//                    throw e; // if different data access issue, just rethrow it
-//                }
-//            }
-            UserData user = data.getUser(userData.username());
-            if (user == null) {
-                return Result.error(Result.ErrorType.UNAUTHORIZED, "Error: unauthorized");
-            }
+            UserData user;
+            try {
+                user = data.getUser(userData.username());
+                if (user == null) {
+                    return Result.error(Result.ErrorType.UNAUTHORIZED, "Error: unauthorized"); // 401
+                }
 
-            if (!user.password().equals(userData.password())) {
-                return Result.error(Result.ErrorType.UNAUTHORIZED, "Error: unauthorized"); // 401
+                // add password matching for password encoder
+                BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+                if (!encoder.matches(userData.password(), user.password())) {
+                    return Result.error(Result.ErrorType.UNAUTHORIZED, "Error: unauthorized"); // 401
+                }
+
+            } catch (DataAccessException e) {
+                if ("User does not exist".equals(e.getMessage())) {
+                    return Result.error(Result.ErrorType.UNAUTHORIZED, "Error: unauthorized"); // 401
+                } else {
+                    throw e; // if different data access issue, just rethrow it
+                }
+
             }
 
             // Correct password, proceed with auth token creation
