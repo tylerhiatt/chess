@@ -1,5 +1,8 @@
 package passoffTests.serverTests;
 
+import dataAccess.MySQLDataAccess;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import server.LoginService;
 import server.RegisterService;
 import server.LogoutService;
@@ -13,6 +16,19 @@ class LogoutServiceTests {
     private final RegisterService registerService = new RegisterService();
     private final LoginService loginService = new LoginService();
     private final LogoutService logoutService = new LogoutService();
+    private MySQLDataAccess dataAccess;
+
+    @BeforeEach
+    public void setUp() throws Exception {
+        dataAccess = MySQLDataAccess.getInstance();
+
+        dataAccess.clear();
+    }
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        dataAccess.clear();
+    }
 
     @Test
     void testLogoutSuccess() {  // positive test

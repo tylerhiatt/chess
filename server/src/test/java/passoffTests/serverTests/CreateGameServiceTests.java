@@ -1,10 +1,14 @@
 package passoffTests.serverTests;
 
+import chess.ChessGame;
 import dataAccess.DataAccessException;
+import dataAccess.MySQLDataAccess;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
 import dataAccess.DataAccess;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import server.Result;
 import server.CreateGameService;
 
@@ -15,14 +19,17 @@ import static org.junit.jupiter.api.Assertions.*;
 class CreateGameServiceTests {
 
     private final CreateGameService createGameService = new CreateGameService();
-    private final DataAccess dataAccess = DataAccess.getInstance();
+    private MySQLDataAccess dataAccess;
     private String validAuthToken;
 
-    @Test
-    void testCreateGameSuccess() {  // positive test case
+    @BeforeEach
+    public void setUp() throws Exception {
+        dataAccess = MySQLDataAccess.getInstance();
+        dataAccess.clear();
+
         // register authToken for user
         try {
-            UserData user = new UserData("testUserCreate", "testPassCreate", "clear@test.com");
+            UserData user = new UserData("testUserCreate", "testPassCreate", "create@test.com");
             dataAccess.createUser(user);
             AuthData authData = dataAccess.createAuth(user.username());
             validAuthToken = authData.authToken();
@@ -30,6 +37,15 @@ class CreateGameServiceTests {
             fail("Failed");
         }
 
+    }
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        dataAccess.clear();
+    }
+
+    @Test
+    void testCreateGameSuccess() {  // positive test case
         Result result = createGameService.createGame(validAuthToken, "Test Game Create");
 
         assertTrue(result.isSuccess());

@@ -1,10 +1,14 @@
 package passoffTests.serverTests;
 
+import chess.ChessGame;
 import dataAccess.DataAccessException;
+import dataAccess.MySQLDataAccess;
 import model.GameData;
 import model.UserData;
 import model.AuthData;
 import dataAccess.DataAccess;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import server.Result;
 import server.ListGameService;
 import server.ClearService;
@@ -15,16 +19,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ListGameServiceTests {
     private final ListGameService listGameService = new ListGameService();
-    private final DataAccess dataAccess = DataAccess.getInstance();
+    private MySQLDataAccess dataAccess;
     private final ClearService clearService = new ClearService();
     private String validAuthToken;
 
-    @Test
-    public void testListGamesSuccess() {  // positive test case
-        clearService.clear();  // make sure starting with empty slate
-
-        GameData game1 = new GameData(1, "white1", "black1", "Game 1", null);
-        GameData game2 = new GameData(2, "white2", "black2", "Game 2", null);
+    @BeforeEach
+    public void setUp() throws Exception {
+        dataAccess = MySQLDataAccess.getInstance();
+        dataAccess.clear();
 
         // register authToken for user
         try {
@@ -35,6 +37,18 @@ class ListGameServiceTests {
         } catch (DataAccessException e) {
             fail("Failed");
         }
+
+    }
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        dataAccess.clear();
+    }
+
+    @Test
+    public void testListGamesSuccess() {  // positive test case
+        GameData game1 = new GameData(1, "white1", "black1", "Game 1", null);
+        GameData game2 = new GameData(2, "white2", "black2", "Game 2", null);
 
         // create games
         try {

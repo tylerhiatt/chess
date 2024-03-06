@@ -1,9 +1,11 @@
 package passoffTests.serverTests;
 
 import dataAccess.DataAccessException;
+import dataAccess.MySQLDataAccess;
 import model.AuthData;
 import model.UserData;
 import dataAccess.DataAccess;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import server.ClearService;
 import server.CreateGameService;
@@ -24,7 +26,8 @@ class JoinGameServiceTests {
         joinGameService = new JoinGameService();
         CreateGameService createGameService = new CreateGameService();
         ClearService clearService = new ClearService();
-        DataAccess dataAccess = DataAccess.getInstance();
+        //DataAccess dataAccess = DataAccess.getInstance();
+        MySQLDataAccess dataAccess = MySQLDataAccess.getInstance();
 
         clearService.clear();
 
