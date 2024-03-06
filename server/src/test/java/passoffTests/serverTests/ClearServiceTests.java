@@ -1,9 +1,12 @@
 package passoffTests.serverTests;
 
 import dataAccess.DataAccessException;
+import dataAccess.MySQLDataAccess;
 import model.UserData;
 import model.GameData;
 import model.AuthData;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import server.ClearService;
 import server.Result;
 import dataAccess.DataAccess;
@@ -14,19 +17,27 @@ import static org.junit.jupiter.api.Assertions.*;
 
 
 class ClearServiceTests {
-    private final DataAccess dataAccess = DataAccess.getInstance();
+    private MySQLDataAccess dataAccess;
+    private final UserData testUser = new UserData("testClear", "testPassClear", "clear@test.com");
+    private final GameData testGame = new GameData(1, "clearWhite", "clearBlack", "clearGame", new ChessGame());
+
+    @BeforeEach
+    public void setUp() throws Exception {
+        dataAccess = MySQLDataAccess.getInstance();
+
+        // set up some user, game, and authToken data
+        dataAccess.createUser(testUser);
+        dataAccess.createGame(testGame);
+        dataAccess.createAuth(testUser.username());
+    }
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        dataAccess.clear();
+    }
 
     @Test
     void clearTestSuccess() {  // only requires positive test case
-        // add user, game, and authToken to state
-        try {
-            dataAccess.createUser(new UserData("testUserClear", "testPassClear", "clearEmail"));
-            dataAccess.createAuth(String.valueOf(new AuthData("testToken", "testUserClear")));
-            dataAccess.createGame(new GameData(1, "testUserClear", null, "Test Game", new ChessGame()));
-
-        } catch (DataAccessException e) {
-            fail("Failed");
-        }
         ClearService clearService = new ClearService();
         Result result = clearService.clear();
 
