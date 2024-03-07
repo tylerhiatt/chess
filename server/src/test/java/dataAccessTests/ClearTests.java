@@ -41,12 +41,36 @@ public class ClearTests {
     }
 
     @Test
-    void testClearPositive() {
+    void testClearPositive1() {
         try (Connection connection = DatabaseManager.getConnection()){
             dataAccess.clear();
 
             assertTrue(isTableEmpty(connection, "Users"));
+
+        } catch (SQLException | DataAccessException e ) {
+            fail("failed");
+        }
+
+    }
+
+    @Test
+    void testClearPositive2() {
+        try (Connection connection = DatabaseManager.getConnection()){
+            dataAccess.clear();
+
             assertTrue(isTableEmpty(connection, "Games"));
+
+        } catch (SQLException | DataAccessException e ) {
+            fail("failed");
+        }
+
+    }
+
+    @Test
+    void testClearPositive3() {
+        try (Connection connection = DatabaseManager.getConnection()){
+            dataAccess.clear();
+
             assertTrue(isTableEmpty(connection, "AuthTokens"));
 
         } catch (SQLException | DataAccessException e ) {
