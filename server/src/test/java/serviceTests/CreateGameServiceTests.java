@@ -1,26 +1,25 @@
-package passoffTests.serverTests;
+package serviceTests;
 
 import chess.ChessGame;
 import dataAccess.DataAccessException;
 import dataAccess.MySQLDataAccess;
+import model.AuthData;
 import model.GameData;
 import model.UserData;
-import model.AuthData;
 import dataAccess.DataAccess;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import server.Result;
-import server.ListGameService;
-import server.ClearService;
+import server.CreateGameService;
+
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+class CreateGameServiceTests {
 
-class ListGameServiceTests {
-    private final ListGameService listGameService = new ListGameService();
+    private final CreateGameService createGameService = new CreateGameService();
     private MySQLDataAccess dataAccess;
-    private final ClearService clearService = new ClearService();
     private String validAuthToken;
 
     @BeforeEach
@@ -30,7 +29,7 @@ class ListGameServiceTests {
 
         // register authToken for user
         try {
-            UserData user = new UserData("testUserList", "testPassList", "list@test.com");
+            UserData user = new UserData("testUserCreate", "testPassCreate", "create@test.com");
             dataAccess.createUser(user);
             AuthData authData = dataAccess.createAuth(user.username());
             validAuthToken = authData.authToken();
@@ -46,30 +45,26 @@ class ListGameServiceTests {
     }
 
     @Test
-    public void testListGamesSuccess() {  // positive test case
-        GameData game1 = new GameData(1, "white1", "black1", "Game 1", null);
-        GameData game2 = new GameData(2, "white2", "black2", "Game 2", null);
+    void testCreateGameSuccess() {  // positive test case
+        Result result = createGameService.createGame(validAuthToken, "Test Game Create");
 
-        // create games
+        assertTrue(result.isSuccess());
+        assertNotEquals(0, result.getGameID()); // make sure game ID isn't 0
+
+        // sanity check that game is listed in dataAccess
         try {
-            dataAccess.createGame(game1);
-            dataAccess.createGame(game2);
+            GameData createdGame = dataAccess.getGame(result.getGameID());
+            assertEquals("Test Game Create", createdGame.gameName());
         } catch (DataAccessException e) {
             fail("Failed");
         }
-
-        Result result = listGameService.listGame(validAuthToken);
-
-        assertTrue(result.isSuccess());
-        assertEquals(2, result.getGames().size()); // make sure both games are listed there
     }
 
     @Test
-    public void testListGamesUnauthorized() {  // negative test case
-        Result result = listGameService.listGame("invalid_auth_token");
+    void testCreateGameUnauthorized() {  // negative test case
+        Result result = createGameService.createGame("invalidAuthToken", "Bad Game");
 
         assertFalse(result.isSuccess());
-        assertEquals("Error: unauthorized", result.getMessage()); // authToken shouldn't exist
+        assertEquals(Result.ErrorType.UNAUTHORIZED, result.getErrorType()); // auth Token shouldn't be there
     }
-
 }

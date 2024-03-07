@@ -1,4 +1,4 @@
-package passoffTests.serverTests;
+package serviceTests;
 
 import dataAccess.MySQLDataAccess;
 import org.eclipse.jetty.server.Authentication;

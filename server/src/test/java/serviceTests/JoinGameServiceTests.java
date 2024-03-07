@@ -1,4 +1,4 @@
-package passoffTests.serverTests;
+package serviceTests;
 
 import dataAccess.DataAccessException;
 import dataAccess.MySQLDataAccess;
