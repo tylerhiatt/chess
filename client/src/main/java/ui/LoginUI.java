@@ -38,7 +38,7 @@ public class LoginUI {
                 // need to get auth token and store for future requests
                 Map<String, String> responseMap = serializer.fromJson(response.body(), Map.class);
                 authToken = responseMap.get("authToken");
-                System.out.println("AuthToken: " + authToken);  // for debugging
+                // System.out.println("AuthToken: " + authToken);
 
             } else {
                 System.out.println("Login failed. Here's the response body: " + response.body());

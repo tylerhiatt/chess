@@ -8,11 +8,15 @@ public class Client {
     private static final LoginUI loginUI = new LoginUI();
     private static final RegisterUI registerUI = new RegisterUI();
     private static final LogoutUI logoutUI = new LogoutUI();
+    private static final CreateGameUI createGameUI = new CreateGameUI();
     private static String userAuthToken;
+    private static int gameID;
 
 
     public void clientStart() {
         System.out.println("♕Welcome to 240 chess. Type Help to get started.♕");
+
+        // should prob clear database each time? idk
 
         // runs until user quits
         while (true) {
@@ -68,6 +72,20 @@ public class Client {
                     System.out.println("must log in user first");
                 }
                 break;
+            case "create":
+                if (parts.length == 2 && isLoggedIn) {
+                    gameID = createGameUI.createGameUI(userAuthToken, parts[1]);
+                } else {
+                    System.out.println("must be logged in and have syntax: create <NAME>");
+                }
+                break;
+            case "list":
+                if (isLoggedIn) {
+                    // list games here
+                } else {
+                    System.out.println("must log in first to view game list");
+                }
+                break;
 
             // add more cases
 
@@ -75,7 +93,6 @@ public class Client {
                 System.out.println("Unknown command. Type 'help' to see available commands.");
                 break;
         }
-
     }
 
     private static void displayHelp() {
