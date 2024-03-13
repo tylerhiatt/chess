@@ -9,6 +9,7 @@ public class Client {
     private static final RegisterUI registerUI = new RegisterUI();
     private static final LogoutUI logoutUI = new LogoutUI();
     private static final CreateGameUI createGameUI = new CreateGameUI();
+    private static final ListGamesUI listGamesUI = new ListGamesUI();
     private static String userAuthToken;
     private static int gameID;
 
@@ -81,7 +82,7 @@ public class Client {
                 break;
             case "list":
                 if (isLoggedIn) {
-                    // list games here
+                    listGamesUI.listGamesUI(userAuthToken);
                 } else {
                     System.out.println("must log in first to view game list");
                 }
