@@ -13,7 +13,7 @@ public class LoginUI {
 
     private String authToken = null;
 
-    public void loginUI(String username, String password) {
+    public String loginUI(String username, String password) {
         HttpClient client = HttpClient.newHttpClient();
         Gson serializer = new Gson();
 
@@ -38,15 +38,18 @@ public class LoginUI {
                 // need to get auth token and store for future requests
                 Map<String, String> responseMap = serializer.fromJson(response.body(), Map.class);
                 authToken = responseMap.get("authToken");
-                System.out.println("AuthToken: " + authToken); // for debugging
+                System.out.println("AuthToken: " + authToken);  // for debugging
 
             } else {
                 System.out.println("Login failed. Here's the response body: " + response.body());
+                return null;  // sets authToken to null
             }
 
         } catch (Exception e) {
             System.out.println("Error logging in: " + e.getMessage());
+            return null; // sets authToken to null
         }
 
+        return authToken;
     }
 }

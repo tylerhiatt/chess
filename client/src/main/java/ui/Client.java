@@ -7,6 +7,8 @@ public class Client {
     private static boolean isLoggedIn = false;
     private static final LoginUI loginUI = new LoginUI();
     private static final RegisterUI registerUI = new RegisterUI();
+    private static final LogoutUI logoutUI = new LogoutUI();
+    private static String userAuthToken;
 
 
     public void clientStart() {
@@ -30,26 +32,40 @@ public class Client {
         String command = parts[0].toLowerCase();
 
         switch(command) {
+            //// Generic UI Commands ////
             case "help":
                 displayHelp();
                 break;
             case "quit":
-                System.exit(0); // exit UI
+                System.exit(0); // exit UI and stop server
                 break;
-            case "login":
-                if (parts.length == 3) {
-                    loginUI.loginUI(parts[1], parts[2]);
-                    isLoggedIn = true;
 
+            //// PreLogin Commands ////
+            case "login":
+                if (parts.length == 3 && !isLoggedIn) {
+                    userAuthToken = loginUI.loginUI(parts[1], parts[2]);  // grab authToken when logging in user
+                    if (userAuthToken != null) {
+                        isLoggedIn = true;  // make sure to only change UI display if the user is actually logged in
+                    }
                 } else {
-                    System.out.println("must have syntax: login <USERNAME> <PASSWORD>");
+                    System.out.println("must have syntax if not already logged in: login <USERNAME> <PASSWORD>");
                 }
                 break;
             case "register":
-                if(parts.length == 4) {
+                if(parts.length == 4 && !isLoggedIn) {
                     registerUI.registerUI(parts[1], parts[2], parts[3]);
                 } else {
-                    System.out.println("must have syntax: register <USERNAME> <PASSWORD> <EMAIL>");
+                    System.out.println("must have syntax if not already logged in: register <USERNAME> <PASSWORD> <EMAIL>");
+                }
+                break;
+
+            //// PostLogin Commands ////
+            case "logout":
+                if (userAuthToken != null) {
+                    logoutUI.logoutUI(userAuthToken);  // should only work if user already logged in
+                    isLoggedIn = false;
+                } else {
+                    System.out.println("must log in user first");
                 }
                 break;
 
@@ -70,7 +86,7 @@ public class Client {
             System.out.println("  quit - playing chess");
             System.out.println("  help - with possible commands");
 
-            // post login help display
+        // post login help display
         } else {
             System.out.println("  create <NAME> - a game");
             System.out.println("  list - games");
