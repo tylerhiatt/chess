@@ -6,11 +6,13 @@ public class Client {
     private static final Scanner scanner = new Scanner(System.in);
     private static boolean isLoggedIn = false;
     private static final LoginUI loginUI = new LoginUI();
+    private static final RegisterUI registerUI = new RegisterUI();
 
 
     public void clientStart() {
         System.out.println("♕Welcome to 240 chess. Type Help to get started.♕");
 
+        // runs until user quits
         while (true) {
             if (!isLoggedIn) {
                 System.out.print("[LOGGED_OUT] >>> ");
@@ -45,7 +47,7 @@ public class Client {
                 break;
             case "register":
                 if(parts.length == 4) {
-                    register(parts[1], parts[2], parts[3]);
+                    registerUI.registerUI(parts[1], parts[2], parts[3]);
                 } else {
                     System.out.println("must have syntax: register <USERNAME> <PASSWORD> <EMAIL>");
                 }
@@ -80,8 +82,4 @@ public class Client {
         }
     }
 
-
-    private static void register(String username, String password, String email) {
-
-    }
 }
