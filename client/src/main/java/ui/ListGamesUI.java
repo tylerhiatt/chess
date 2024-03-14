@@ -12,11 +12,11 @@ import java.util.List;
 import java.util.Map;
 
 public class ListGamesUI {
-    public void listGamesUI(String authToken) {
+    public void listGamesUI(int port, String authToken) {
         HttpClient client = HttpClient.newHttpClient();
         Gson serializer = new Gson();
 
-        String listGameUrl = "http://localhost:8080/game";
+        String listGameUrl = "http://localhost:" + port + "/game";
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(listGameUrl))

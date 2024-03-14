@@ -10,11 +10,11 @@ import java.util.Map;
 
 public class CreateGameUI {
 
-    public void createGameUI(String authToken, String gameName) {
+    public void createGameUI(int port, String authToken, String gameName) {
         HttpClient client = HttpClient.newHttpClient();
         Gson serializer = new Gson();
 
-        String createGameUrl = "http://localhost:8080/game";
+        String createGameUrl = "http://localhost:" + port + "/game";
 
         Map<String, String> data = Map.of("gameName", gameName);
         String requestBody = serializer.toJson(data);

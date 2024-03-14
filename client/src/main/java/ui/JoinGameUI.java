@@ -11,11 +11,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class JoinGameUI {
-    public void joinGameUI(String authToken, int gameID, String playerColor) {
+    public void joinGameUI(int port, String authToken, int gameID, String playerColor) {
         HttpClient client = HttpClient.newHttpClient();
         Gson serializer = new Gson();
 
-        String joinGameUrl = "http://localhost:8080/game";
+        String joinGameUrl = "http://localhost:" + port + "/game";
 
         // put gameID and playerColor in hashmap
         Map<String, Object> data = new HashMap<>();

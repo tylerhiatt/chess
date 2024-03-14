@@ -13,11 +13,11 @@ public class LoginUI {
 
     private String authToken = null;
 
-    public String loginUI(String username, String password) {
+    public String loginUI(int port, String username, String password) {
         HttpClient client = HttpClient.newHttpClient();
         Gson serializer = new Gson();
 
-        String loginUrl = "http://localhost:8080/session";  // prob need to change later idk
+        String loginUrl = "http://localhost:" + port + "/session";  // prob need to change later idk
 
         Map<Object, Object> data = Map.of("username", username, "password", password);
         String requestBody = serializer.toJson(data);

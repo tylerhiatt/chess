@@ -16,7 +16,7 @@ public class Main {
         System.out.println("Server running on port: " + port);
 
         // interact with server with client UI
-        client.clientStart();
+        client.clientStart(port);
 
     }
 

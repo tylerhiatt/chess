@@ -15,10 +15,10 @@ public class Client {
     private static final JoinGameUI joinGameUI = new JoinGameUI();
     private static String userAuthToken;  // used for multiple client methods
 
-    public void clientStart() {
+    public void clientStart(int port) {
         System.out.println("♕Welcome to 240 chess. Type Help to get started.♕");
 
-        // should prob clear database each time? idk
+        // should prob clear database from time to time? idk
 
         // runs until user quits
         while (true) {
@@ -28,12 +28,12 @@ public class Client {
                 System.out.print("[LOGGED_IN] >>> ");
             }
             String input = scanner.nextLine().trim().toLowerCase();  // make sure input works for different types
-            inputHandler(input);
+            inputHandler(input, port);
 
         }
     }
 
-    private static void inputHandler(String input) {
+    private static void inputHandler(String input, int port) {
         String[] parts = input.split(" ");
         String command = parts[0].toLowerCase();
 
@@ -49,7 +49,7 @@ public class Client {
             //// PreLogin Commands ////
             case "login":
                 if (parts.length == 3 && !isLoggedIn) {
-                    userAuthToken = loginUI.loginUI(parts[1], parts[2]);  // grab authToken when logging in user
+                    userAuthToken = loginUI.loginUI(port, parts[1], parts[2]);  // grab authToken when logging in user
                     if (userAuthToken != null) {
                         isLoggedIn = true;  // make sure to only change UI display if the user is actually logged in
                     }
@@ -59,7 +59,7 @@ public class Client {
                 break;
             case "register":
                 if(parts.length == 4 && !isLoggedIn) {
-                    registerUI.registerUI(parts[1], parts[2], parts[3]);
+                    registerUI.registerUI(port, parts[1], parts[2], parts[3]);
                 } else {
                     System.out.println("must have syntax if not already logged in: register <USERNAME> <PASSWORD> <EMAIL>");
                 }
@@ -68,7 +68,7 @@ public class Client {
             //// PostLogin Commands ////
             case "logout":
                 if (userAuthToken != null) {
-                    logoutUI.logoutUI(userAuthToken);  // should only work if user already logged in
+                    logoutUI.logoutUI(port, userAuthToken);  // should only work if user already logged in
                     isLoggedIn = false;
                 } else {
                     System.out.println("must log in user first");
@@ -76,14 +76,14 @@ public class Client {
                 break;
             case "create":
                 if (parts.length == 2 && isLoggedIn) {
-                    createGameUI.createGameUI(userAuthToken, parts[1]);
+                    createGameUI.createGameUI(port, userAuthToken, parts[1]);
                 } else {
                     System.out.println("must be logged in and have syntax: create <NAME>");
                 }
                 break;
             case "list":
                 if (isLoggedIn) {
-                    listGamesUI.listGamesUI(userAuthToken);
+                    listGamesUI.listGamesUI(port, userAuthToken);
                 } else {
                     System.out.println("must log in first to view game list");
                 }
@@ -98,7 +98,10 @@ public class Client {
                     if (!playerColor.equals("WHITE") && !playerColor.equals("BLACK") && !playerColor.isEmpty()) {
                         System.out.println("player color must be WHITE, BLACK, or leave empty");
                     } else {
-                        joinGameUI.joinGameUI(userAuthToken, Integer.parseInt(parts[1]), playerColor);
+                        joinGameUI.joinGameUI(port, userAuthToken, Integer.parseInt(parts[1]), playerColor);
+                        // print initial boards
+                        printGames();
+
                     }
 
                 } else {
@@ -107,13 +110,14 @@ public class Client {
                 break;
             case "observe":
                 if (parts.length == 2 && isLoggedIn) {
-                    joinGameUI.joinGameUI(userAuthToken, Integer.parseInt(parts[1]), null);  // playerColor = null means observer
+                    joinGameUI.joinGameUI(port, userAuthToken, Integer.parseInt(parts[1]), null);  // playerColor = null means observer
+                    // print initial boards
+                    printGames();
+
                 } else {
                     System.out.println("must be logged in and have syntax: observe <ID>");
                 }
                 break;
-
-            // add more cases
 
             default:
                 System.out.println("Unknown command. Type 'help' to see available commands.");
@@ -139,6 +143,13 @@ public class Client {
             System.out.println("  quit - playing chess");
             System.out.println("  help - with possible commands");
         }
+    }
+
+    private static void printGames() {
+        // print black then white
+        GameplayUI.printBoardBlackOrientation();
+        System.out.println();
+        GameplayUI.printBoardWhiteOrientation();
     }
 
 }

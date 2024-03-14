@@ -9,11 +9,11 @@ import java.net.http.HttpResponse;
 import java.util.Map;
 
 public class RegisterUI {
-    public void registerUI(String username, String password, String email) {
+    public void registerUI(int port, String username, String password, String email) {
         HttpClient client = HttpClient.newHttpClient();
         Gson serializer = new Gson();
 
-        String registerUrl = "http://localhost:8080/user";
+        String registerUrl = "http://localhost:" + port + "/user";
 
         Map<Object, Object> data = Map.of("username", username, "password", password, "email", email);
         String requestBody = serializer.toJson(data);

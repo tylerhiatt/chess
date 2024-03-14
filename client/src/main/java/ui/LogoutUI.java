@@ -6,9 +6,9 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public class LogoutUI {
-    public void logoutUI(String authToken) {
+    public void logoutUI(int port, String authToken) {
         HttpClient client = HttpClient.newHttpClient();
-        String logoutUrl = "http://localhost:8080/session";
+        String logoutUrl = "http://localhost:" + port + "/session";
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(logoutUrl))
