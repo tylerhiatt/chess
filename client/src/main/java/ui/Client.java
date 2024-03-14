@@ -33,7 +33,7 @@ public class Client {
         }
     }
 
-    private static void inputHandler(String input, int port) {
+    public void inputHandler(String input, int port) {
         String[] parts = input.split(" ");
         String command = parts[0].toLowerCase();
 
