@@ -9,9 +9,8 @@ import java.net.http.HttpResponse;
 import java.util.Map;
 
 public class CreateGameUI {
-    private int gameID;
 
-    public int createGameUI(String authToken, String gameName) {
+    public void createGameUI(String authToken, String gameName) {
         HttpClient client = HttpClient.newHttpClient();
         Gson serializer = new Gson();
 
@@ -34,7 +33,7 @@ public class CreateGameUI {
                 // grab gameID needed for other commands
                 Map<String, Object> responseMap = serializer.fromJson(response.body(), Map.class);
                 Number gameIDNum = (Number) responseMap.get("gameID");
-                gameID = gameIDNum.intValue();
+                int gameID = gameIDNum.intValue();
 
                 if (gameID > -1) {
                     System.out.println("Game " + gameName + " created successfully with gameID " + gameID);
@@ -44,13 +43,10 @@ public class CreateGameUI {
 
             } else {
                 System.out.println("Game creation failed. Here's the response body: " + response.body());
-                return -1; // make gameID invalid ID num if failed
             }
 
         } catch (Exception e) {
             System.out.println("Error creating game: " + e.getMessage());
-            return -1;
         }
-        return gameID;
     }
 }

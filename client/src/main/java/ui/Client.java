@@ -1,5 +1,7 @@
 package ui;
 
+import chess.ChessGame;
+
 import java.util.Scanner;
 
 public class Client {
@@ -10,9 +12,8 @@ public class Client {
     private static final LogoutUI logoutUI = new LogoutUI();
     private static final CreateGameUI createGameUI = new CreateGameUI();
     private static final ListGamesUI listGamesUI = new ListGamesUI();
-    private static String userAuthToken;
-    private static int gameID;
-
+    private static final JoinGameUI joinGameUI = new JoinGameUI();
+    private static String userAuthToken;  // used for multiple client methods
 
     public void clientStart() {
         System.out.println("♕Welcome to 240 chess. Type Help to get started.♕");
@@ -75,7 +76,7 @@ public class Client {
                 break;
             case "create":
                 if (parts.length == 2 && isLoggedIn) {
-                    gameID = createGameUI.createGameUI(userAuthToken, parts[1]);
+                    createGameUI.createGameUI(userAuthToken, parts[1]);
                 } else {
                     System.out.println("must be logged in and have syntax: create <NAME>");
                 }
@@ -85,6 +86,30 @@ public class Client {
                     listGamesUI.listGamesUI(userAuthToken);
                 } else {
                     System.out.println("must log in first to view game list");
+                }
+                break;
+            case "join":
+                if (parts.length >= 2 && parts.length <= 3 && isLoggedIn) {
+                    String playerColor = "";
+                    if (parts.length == 3) {
+                        playerColor = parts[2].toUpperCase(); // WHITE OR BLACK, else stays empty
+                    }
+
+                    if (!playerColor.equals("WHITE") && !playerColor.equals("BLACK") && !playerColor.isEmpty()) {
+                        System.out.println("player color must be WHITE, BLACK, or leave empty");
+                    } else {
+                        joinGameUI.joinGameUI(userAuthToken, Integer.parseInt(parts[1]), playerColor);
+                    }
+
+                } else {
+                    System.out.println("must be logged in and have syntax: join <ID> [WHITE|BLACK|<empty>]");
+                }
+                break;
+            case "observe":
+                if (parts.length == 2 && isLoggedIn) {
+                    joinGameUI.joinGameUI(userAuthToken, Integer.parseInt(parts[1]), null);  // playerColor = null means observer
+                } else {
+                    System.out.println("must be logged in and have syntax: observe <ID>");
                 }
                 break;
 
