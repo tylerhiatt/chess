@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class CreateGameUI {
 
-    public void createGameUI(int port, String authToken, String gameName) {
+    public int createGameUI(int port, String authToken, String gameName) {
         HttpClient client = HttpClient.newHttpClient();
         Gson serializer = new Gson();
 
@@ -37,16 +37,20 @@ public class CreateGameUI {
 
                 if (gameID > -1) {
                     System.out.println("Game " + gameName + " created successfully with gameID " + gameID);
+                    return gameID;
                 } else {
                     System.out.println("GameID " + gameID + "invalid for some reason lol. Game creation failed");
+                    return -1;
                 }
 
             } else {
                 System.out.println("Game creation failed. Here's the response body: " + response.body());
+                return -1;
             }
 
         } catch (Exception e) {
             System.out.println("Error creating game: " + e.getMessage());
+            return -1;
         }
     }
 }
