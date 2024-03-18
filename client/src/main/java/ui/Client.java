@@ -59,7 +59,12 @@ public class Client {
                 break;
             case "register":
                 if(parts.length == 4 && !isLoggedIn) {
-                    registerUI.registerUI(port, parts[1], parts[2], parts[3]);
+                    String newAuthToken = registerUI.registerUI(port, parts[1], parts[2], parts[3]);
+                    if (newAuthToken != null) {
+                        userAuthToken = newAuthToken;
+                        isLoggedIn = true;
+                    }
+
                 } else {
                     System.out.println("must have syntax if not already logged in: register <USERNAME> <PASSWORD> <EMAIL>");
                 }
@@ -99,8 +104,15 @@ public class Client {
                         System.out.println("player color must be WHITE, BLACK, or leave empty");
                     } else {
                         joinGameUI.joinGameUI(port, userAuthToken, Integer.parseInt(parts[1]), playerColor);
+
                         // print initial boards
-                        printGames();
+                        if (playerColor.equals("WHITE")) {
+                            printGames();
+                        } else if (playerColor.equals("BLACK")) {
+                            GameplayUI.printBoardWhiteOrientation();
+                            System.out.println();
+                            GameplayUI.printBoardBlackOrientation();
+                        }
 
                     }
 

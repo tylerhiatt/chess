@@ -17,7 +17,7 @@ public class LoginUI {
         HttpClient client = HttpClient.newHttpClient();
         Gson serializer = new Gson();
 
-        String loginUrl = "http://localhost:" + port + "/session";  // prob need to change later idk
+        String loginUrl = "http://localhost:" + port + "/session";
 
         Map<Object, Object> data = Map.of("username", username, "password", password);
         String requestBody = serializer.toJson(data);
