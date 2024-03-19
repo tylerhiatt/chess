@@ -74,8 +74,9 @@ public class ServerFacadeTests {
         var getOutput = new java.io.ByteArrayOutputStream();
         System.setOut(new java.io.PrintStream(getOutput));
 
-        // try to register same user twice, (logout in between to do so) second one should fail
+        // try to register same user twice, second one should fail
         serverFacade.inputHandler(simulatedInput, port);
+        serverFacade.inputHandler("logout", port);
         serverFacade.inputHandler(simulatedInput, port);
 
         // should fail with 403 error
@@ -94,6 +95,7 @@ public class ServerFacadeTests {
 
         // register user then login
         serverFacade.inputHandler(registerInput, port);
+        serverFacade.inputHandler("logout", port);
         serverFacade.inputHandler(loginInput, port);
 
         // make sure 200 response is printed out
@@ -113,6 +115,7 @@ public class ServerFacadeTests {
 
         // try to log in with wrong password, should throw 401 error
         serverFacade.inputHandler(registerInput, port);
+        serverFacade.inputHandler("logout", port);
         serverFacade.inputHandler(loginInput, port);
 
         // should fail with 403 error
