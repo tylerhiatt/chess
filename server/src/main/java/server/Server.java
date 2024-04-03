@@ -6,10 +6,12 @@ import dataAccess.DatabaseManager;
 import dataAccess.StartDatabase;
 import spark.*;
 import model.UserData;
+import server.websocket.WebSocketHandler;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class Server {
+    private final WebSocketHandler webSocketHandler = new WebSocketHandler();
 
     public int run(int desiredPort) {
 
@@ -23,6 +25,9 @@ public class Server {
 
         Spark.port(desiredPort);
         Spark.staticFiles.location("web");
+
+        // websocket handler
+        Spark.webSocket("/connect", webSocketHandler);
 
         // register endpoints
         clearEndpoint();
