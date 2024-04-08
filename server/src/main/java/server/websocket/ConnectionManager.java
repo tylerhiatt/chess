@@ -3,23 +3,32 @@ package server.websocket;
 import org.eclipse.jetty.websocket.api.Session;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
     private final ConcurrentHashMap<String, Connection> connections = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Integer, List<Session>> gameSessions = new ConcurrentHashMap<>();
 
-    // add user to game
+    // Add user to game
     public void add(int gameID, String playerName, Session session) {
         var connection = new Connection(playerName, session);
         connections.put(playerName, connection);
 
         gameSessions.compute(gameID, (id, sessions) -> {
             if (sessions == null) {
-                sessions = new ArrayList<>();
+                sessions = Collections.synchronizedList(new java.util.ArrayList<>());
             }
             sessions.add(session);
+
+            // debugging
+            if (playerName.isEmpty()) {
+                System.out.println("Added session for Observer to game " + gameID);
+            } else {
+                System.out.println("Added session for " + playerName + " to game " + gameID);
+            }
             return sessions;
         });
     }
@@ -28,36 +37,44 @@ public class ConnectionManager {
         return connections.get(playerName);
     }
 
-    public void remove(int gameID, String playerName) {
-        Connection connection = connections.remove(playerName);
-
-        if (connection != null) {
-            gameSessions.computeIfPresent(gameID, (id, sessions) -> {
-                sessions.remove(connection.session);
-                return sessions.isEmpty() ? null : sessions;
-            });
-        }
-
-    }
-
-    public List<Session> sessionsConnectedToGame(int gameID) {
-        return gameSessions.getOrDefault(gameID, new ArrayList<>());
-    }
-
-//    public void broadcast(String excludePlayerName, String message) throws  IOException {
-//        var removeList = new ArrayList<Connection>();
-//        for (var connection : connections.values()) {
-//            if (connection.session.isOpen()) {
-//                if (!connection.playerName.equals(excludePlayerName)) {
-//                    connection.send(message);
+//    public void remove(int gameID, String playerName) {
+//        Connection connection = connections.remove(playerName);
+//
+//        if (connection != null) {
+//            gameSessions.computeIfPresent(gameID, (id, sessions) -> {
+//                sessions.remove(connection.session);
+//                if (sessions.isEmpty()) {
+//                    return null;
 //                }
-//            } else {
-//                removeList.add(connection);
-//            }
-//        }
-//        // clean up
-//        for (var connection : removeList) {
-//            connections.remove(connection.playerName);
+//                return sessions;
+//            });
+//            System.out.println("Removed session for " + playerName + " from game " + gameID);  // debug
 //        }
 //    }
+
+    public void removeSession(Session session) {
+        // find the playerName associated with the session to be removed
+        String playerNameToRemove = connections.entrySet().stream()
+                .filter(entry -> entry.getValue().session.equals(session))
+                .map(Map.Entry::getKey)
+                .findFirst()
+                .orElse(null);
+
+        if (playerNameToRemove != null) {
+            // remove the connection based on playerName
+            connections.remove(playerNameToRemove);
+
+            // remove the session from all game sessions if needed
+            gameSessions.values().forEach(sessions -> sessions.removeIf(s -> s.equals(session)));
+
+            System.out.println("Session for " + playerNameToRemove + " removed.");
+        }
+    }
+
+
+    public List<Session> sessionsConnectedToGame(int gameID) {
+        return gameSessions.getOrDefault(gameID, Collections.emptyList());
+    }
+
+
 }

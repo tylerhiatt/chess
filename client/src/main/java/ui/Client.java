@@ -1,7 +1,13 @@
 package ui;
 
 import chess.ChessGame;
+import ui.websocket.WebSocketClient;
+import webSocketMessages.serverMessages.ServerMessage;
+import webSocketMessages.userCommands.UserGameCommand;
 
+import javax.websocket.DeploymentException;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Scanner;
 
 public class Client {
@@ -14,6 +20,8 @@ public class Client {
     private static final ListGamesUI listGamesUI = new ListGamesUI();
     private static final JoinGameUI joinGameUI = new JoinGameUI();
     private static String userAuthToken;  // used for multiple client methods
+
+    private WebSocketClient webSocketClient; // websocket client to establish connection
 
     public void clientStart(int port) {
         System.out.println("♕Welcome to 240 chess. Type Help to get started.♕");
@@ -104,6 +112,8 @@ public class Client {
                         System.out.println("player color must be WHITE, BLACK, or leave empty");
                     } else {
                         joinGameUI.joinGameUI(port, userAuthToken, Integer.parseInt(parts[1]), playerColor);
+                        initializeWebSocketConnection("http://localhost:8080");  // start websocket connection
+                        // send join game websocket message
 
                         // print initial boards
                         if (playerColor.equals("WHITE")) {
@@ -162,6 +172,34 @@ public class Client {
         GameplayUI.printBoardBlackOrientation();
         System.out.println();
         GameplayUI.printBoardWhiteOrientation();
+    }
+
+    private void initializeWebSocketConnection(String url) {
+        try {
+            this.webSocketClient = new WebSocketClient(url, this::handleWebsocketMessage);
+            System.out.println("Websocket connection established");
+
+        } catch (URISyntaxException | DeploymentException | IOException e) {
+            System.err.println("Failed to establish WebSocket connection: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+
+    private void handleWebsocketMessage(ServerMessage message) {
+        System.out.println("WebSocket message received: " + message);
+    }
+
+    private void sendWebsocketCommand(UserGameCommand command) {
+        if (this.webSocketClient != null) {
+            try {
+                this.webSocketClient.sendCommand(command);
+            } catch (Exception e) {
+                System.err.println("Failed to send websocket command: " + e.getMessage());
+            }
+        } else {
+            System.out.println("Websocket is not connected");
+        }
     }
 
 }

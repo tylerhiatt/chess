@@ -1,7 +1,12 @@
 package ui.websocket;
 
+import chess.ChessGame;
+import chess.ChessMove;
 import com.google.gson.Gson;
 import webSocketMessages.serverMessages.ServerMessage;
+import webSocketMessages.userCommands.JoinObserverCommand;
+import webSocketMessages.userCommands.JoinPlayerCommand;
+import webSocketMessages.userCommands.MoveCommand;
 import webSocketMessages.userCommands.UserGameCommand;
 
 import javax.websocket.*;
@@ -11,10 +16,13 @@ import java.net.URISyntaxException;
 
 
 public class WebSocketClient extends Endpoint {
-   private final Session session;
+   private Session session;
    private final Gson serializer = new Gson();
+   private NotificationHandler notificationHandler;
 
     public WebSocketClient(String url, NotificationHandler notificationHandler) throws URISyntaxException, DeploymentException, IOException {
+        this.notificationHandler = notificationHandler;
+
         try {
             url = url.replace("http", "ws");
             URI socketURI = new URI(url + "/connect");
@@ -37,17 +45,39 @@ public class WebSocketClient extends Endpoint {
         }
    }
 
-   @Override
-    public void onOpen(Session session, EndpointConfig config) {
-       System.out.println("WebSocket connection opened");
+    @Override
+    public void onOpen(Session session, EndpointConfig endpointConfig) {
+        System.out.println("WebSocket connection opened");
+        this.session = session;
+    }
+
+    @OnClose
+   public void onClose(Session session, CloseReason reason) {
+        System.out.println("WebSocket connection closed: " + reason);
+        this.session = null; // clear session
+   }
+
+   public void sendJoinPlayerCommand(int gameID, ChessGame.TeamColor playerColor, String authToken) {
+        UserGameCommand command = new JoinPlayerCommand(authToken, gameID, playerColor);
+        sendCommand(command);
+   }
+
+   public void sendJoinObserverCommand(String authToken, int gameID) {
+        UserGameCommand command = new JoinObserverCommand(authToken, gameID);
+        sendCommand(command);
+   }
+
+   public void sendMakeMoveCommand(String authToken, int gameID, ChessMove move) {
+        UserGameCommand command = new MoveCommand(authToken, gameID, move);
+        sendCommand(command);
    }
 
    public void sendCommand(UserGameCommand command) {
-       if (this.session != null && this.session.isOpen()) {
+       if (session != null && session.isOpen()) {
            try {
-               // Convert command to JSON and send
+               // convert command to JSON and send
                String commandJson = serializer.toJson(command);
-               this.session.getAsyncRemote().sendText(commandJson);
+               session.getAsyncRemote().sendText(commandJson);
            } catch (Exception ex) {
                System.err.println("Error sending command: " + ex.getMessage());
            }
@@ -57,8 +87,8 @@ public class WebSocketClient extends Endpoint {
    }
 
    public void closeSession() throws IOException {
-       if (this.session != null) {
-           this.session.close();
+       if (session != null) {
+           session.close();
        }
    }
 

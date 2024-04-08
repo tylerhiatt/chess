@@ -1,7 +1,5 @@
 package webSocketMessages.serverMessages;
 
-import com.google.gson.Gson;
-
 import java.util.Objects;
 
 /**
@@ -12,7 +10,6 @@ import java.util.Objects;
  */
 public class ServerMessage {
     ServerMessageType serverMessageType;
-    private final String message;
 
     public enum ServerMessageType {
         LOAD_GAME,
@@ -20,20 +17,9 @@ public class ServerMessage {
         NOTIFICATION
     }
 
-    // Constructor for messages with content
-    public ServerMessage(ServerMessageType serverMessageType, String message) {
-        this.serverMessageType = serverMessageType;
-        this.message = message;
+    public ServerMessage(ServerMessageType type) {
+        this.serverMessageType = type;
     }
-
-    public String getMessage() {
-        return message;
-    }
-
-// old constructor, may have to go back
-//    public ServerMessage(ServerMessageType type) {
-//        this.serverMessageType = type;
-//    }
 
     public ServerMessageType getServerMessageType() {
         return this.serverMessageType;

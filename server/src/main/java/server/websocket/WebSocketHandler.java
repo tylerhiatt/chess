@@ -14,11 +14,15 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import com.google.gson.Gson;
 import server.JoinGameService;
 import server.Result;
+import webSocketMessages.serverMessages.ErrorMessage;
+import webSocketMessages.serverMessages.LoadGameMessage;
+import webSocketMessages.serverMessages.NotificationMessage;
 import webSocketMessages.userCommands.MoveCommand;
 import webSocketMessages.userCommands.UserGameCommand;
 import webSocketMessages.serverMessages.ServerMessage;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicReference;
 
 @WebSocket
 public class WebSocketHandler {
@@ -34,7 +38,9 @@ public class WebSocketHandler {
 
     @OnWebSocketClose
     public void onClose(Session session, int statusCode, String reason) {
-        // remove player from connections?
+        // remove player from connection
+//        connections.removeSession(session);
+//        System.out.println("Connection closed: " + session.getRemoteAddress().getAddress() + ", Reason: " + reason);
     }
 
     @OnWebSocketMessage
@@ -47,8 +53,11 @@ public class WebSocketHandler {
             UserGameCommand command = serializer.fromJson(message, UserGameCommand.class);
 
             switch (command.getCommandType()) {
-                case JOIN_PLAYER, JOIN_OBSERVER:
+                case JOIN_PLAYER:
                     handleJoinPlayer(session, command);
+                    break;
+                case JOIN_OBSERVER:
+                    handleJoinObserver(session, command);
                     break;
                 case MAKE_MOVE:
                     MoveCommand moveCommand = serializer.fromJson(message, MoveCommand.class);
@@ -75,53 +84,50 @@ public class WebSocketHandler {
     }
 
     //// handler methods for different command cases
+
     private void handleJoinPlayer(Session session, UserGameCommand command) throws IOException {
-        MySQLDataAccess data = MySQLDataAccess.getInstance();
+        // use atomic ref to condense code
+        AtomicReference<GameData> gameRef = new AtomicReference<>();
+        if (!validate(session, command, gameRef)) return;
 
-        try {
-            // make sure auth data is valid
-            AuthData authData = data.getAuth(command.getAuthString());
-            if (authData == null) {
-                sendError(session, "Invalid auth token");
-                return;
-            }
-
-            // make sure game ID is valid
-            GameData game = data.getGame(command.getGameID());
-            if (game == null) {
-                sendError(session, "Invalid game ID");
-                return;
-            }
-
-            boolean isObserver = command.getPlayerColor() == null;
-            Result joinGameResult;
-
-            // observer case
-            if (isObserver) {
-                joinGameResult = joinGameService.joinGame(command.getAuthString(), command.getGameID(), null);
-                if (!joinGameResult.isSuccess()) {
-                    // send error message back to client
-                    sendError(session, joinGameResult.getMessage());
-                    return;
-                }
-                sendNotification(session, "Joined game as observer");
-
-            } else {
-                // normal player case
-                joinGameResult = joinGameService.joinGame(command.getAuthString(), command.getGameID(), command.getPlayerColor());
-                if (!joinGameResult.isSuccess()) {
-                    sendError(session, joinGameResult.getMessage());
-                    return;
-                }
-                sendNotification(session, "Joined the game as: " + command.getPlayerColor());
-            }
-
-            ChessGame chessGame = game.game();
-            broadcastUpdatedGameState(chessGame, command.getGameID());
-
-        } catch (DataAccessException e) {
-            sendError(session, "Failed to join game " + e.getMessage());
+        // make sure game can be joined
+        GameData game = gameRef.get();
+        if (game.whiteUsername() == null && game.blackUsername() == null) {
+            sendError(session, "Game hasn't been started yet, not joinable");
+            return;
         }
+
+        // add user to session and join game
+        connections.add(command.getGameID(), command.getAuthString(), session);
+        Result joinGameResult = joinGameService.joinGame(command.getAuthString(), command.getGameID(), command.getPlayerColor());
+
+        if (!joinGameResult.isSuccess()) {
+            sendError(session, joinGameResult.getMessage());
+            return;
+        }
+
+        // send load game to root client
+        sendLoadGame(session, game.game());
+
+        // send notification to other users
+        broadcastNotificationToOthers(command.getGameID(), session, "Joined the game as: " + command.getPlayerColor());
+    }
+
+    private void handleJoinObserver(Session session, UserGameCommand command) throws IOException {
+        AtomicReference<GameData> gameRef = new AtomicReference<>();
+        if (!validate(session, command, gameRef)) return;
+
+        GameData game = gameRef.get();
+        connections.add(command.getGameID(), command.getAuthString(), session);
+        Result joinGameResult = joinGameService.joinGame(command.getAuthString(), command.getGameID(), null);
+
+        if (!joinGameResult.isSuccess()) {
+            sendError(session, joinGameResult.getMessage());
+            return;
+        }
+
+        sendLoadGame(session, game.game());
+        broadcastNotificationToOthers(command.getGameID(), session, "Joined the game as an observer");
     }
 
     private void handleMakeMove(Session session, MoveCommand command) throws IOException{
@@ -147,7 +153,7 @@ public class WebSocketHandler {
             chessGame.makeMove(command.getMove());
 
             // if successful, broadcast updated game state
-            broadcastUpdatedGameState(chessGame, command.getGameID());
+            //broadcastUpdatedGameState(chessGame, command.getGameID());
 
         } catch (DataAccessException e) {
             sendError(session, "Failed to make move: " + e.getMessage());
@@ -157,33 +163,55 @@ public class WebSocketHandler {
     }
 
 
-    //// helper methods to send messages to client
+    //// helper methods to send messages
     private void sendError(Session session, String message) throws IOException {
-        ServerMessage errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
-        session.getRemote().sendString(new Gson().toJson(errorMessage));
+        ErrorMessage errorMessage = new ErrorMessage(message);
+        session.getRemote().sendString(serializer.toJson(errorMessage));
     }
 
-    private void sendNotification(Session session, String message) throws IOException {
-        ServerMessage notificationMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
-        session.getRemote().sendString(new Gson().toJson(notificationMessage));
+    private void sendLoadGame(Session session, ChessGame game) throws IOException {
+        String gameStateJson = serializer.toJson(game);
+        LoadGameMessage loadGameMessage = new LoadGameMessage(gameStateJson);
+        session.getRemote().sendString(serializer.toJson(loadGameMessage));
     }
 
-    private void broadcastUpdatedGameState(ChessGame chessGame, int gameID) throws IOException{
-        // retrieve the updated game state
-        String gameStateJson = serializer.toJson(chessGame.getBoard());
-        ServerMessage loadGameMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameStateJson);
-        String messageJson = serializer.toJson(loadGameMessage);
+    private void broadcastNotificationToOthers(int gameID, Session excludeSession, String notificationText) throws IOException {
+        for (Session otherSession : connections.sessionsConnectedToGame(gameID)) {
+            // exclude root client
+            if (!otherSession.equals(excludeSession) && otherSession.isOpen()) {
+                // notification message
+                NotificationMessage notificationMessage = new NotificationMessage(notificationText);
+                otherSession.getRemote().sendString(serializer.toJson(notificationMessage));
 
-        // broadcast updated game state to all players
-        for (Session session : connections.sessionsConnectedToGame(gameID)) {
-            if (session.isOpen()) {
-                session.getRemote().sendString(messageJson);
             }
         }
-
-
-
     }
+
+    //// helper method to clean up code
+    private boolean validate(Session session, UserGameCommand command, AtomicReference<GameData> gameRef) throws IOException {
+        MySQLDataAccess data = MySQLDataAccess.getInstance();
+        try {
+            AuthData authData = data.getAuth(command.getAuthString());
+            if (authData == null) {
+                sendError(session, "Invalid auth token");
+                return false;
+            }
+
+            GameData game = data.getGame(command.getGameID());
+            if (game == null) {
+                sendError(session, "Invalid game ID");
+                return false;
+            }
+
+            gameRef.set(game);
+            return true;
+        } catch (DataAccessException e) {
+            sendError(session, "Failed to access data: " + e.getMessage());
+            return false;
+        }
+    }
+
+
 
 
 }
