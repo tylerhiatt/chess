@@ -134,32 +134,42 @@ public class WebSocketHandler {
         MySQLDataAccess data = MySQLDataAccess.getInstance();
 
         try {
-            // make sure auth data is valid
             AuthData authData = data.getAuth(command.getAuthString());
             if (authData == null) {
                 sendError(session, "Invalid auth token");
                 return;
             }
 
-            // make sure game ID is valid
             GameData game = data.getGame(command.getGameID());
             if (game == null) {
                 sendError(session, "Invalid game ID");
                 return;
             }
 
-            // should handle any errors thrown with invalid moves/not player's turn
             ChessGame chessGame = game.game();
+
+            boolean isPlayerTurn = (chessGame.getTeamTurn() == ChessGame.TeamColor.WHITE && authData.username().equals(game.whiteUsername())) ||
+                    (chessGame.getTeamTurn() == ChessGame.TeamColor.BLACK && authData.username().equals(game.blackUsername()));
+
+            if (!isPlayerTurn) {
+                sendError(session, "Not your turn or you're not a player in this game");
+                return;
+            }
+
+            // should handle any errors thrown with invalid moves/not player's turn
             chessGame.makeMove(command.getMove());
 
-            // if successful, broadcast updated game state
-            //broadcastUpdatedGameState(chessGame, command.getGameID());
+            // if successful send messages
+            broadcastLoadGame(session, chessGame, game.gameID());
+            broadcastNotificationToOthers(command.getGameID(), session, command.getPlayerColor() + " made a move: " + command.getMove().toString());
 
         } catch (DataAccessException e) {
-            sendError(session, "Failed to make move: " + e.getMessage());
+            sendError(session, "Failed to access data: " + e.getMessage());
+
         } catch (InvalidMoveException e) {
-            throw new RuntimeException(e);
+            sendError(session, "Invalid move " + e.getMessage());
         }
+
     }
 
 
@@ -187,6 +197,18 @@ public class WebSocketHandler {
         }
     }
 
+    private void broadcastLoadGame(Session session, ChessGame game, int gameID) throws IOException {
+        for (Session otherSession : connections.sessionsConnectedToGame(gameID)) {
+            if (session.isOpen()) {
+
+                LoadGameMessage loadGameMessage = new LoadGameMessage(serializer.toJson(game));
+                otherSession.getRemote().sendString(serializer.toJson(loadGameMessage));
+
+            }
+        }
+
+    }
+
     //// helper method to clean up code
     private boolean validate(Session session, UserGameCommand command, AtomicReference<GameData> gameRef) throws IOException {
         MySQLDataAccess data = MySQLDataAccess.getInstance();
@@ -205,6 +227,7 @@ public class WebSocketHandler {
 
             gameRef.set(game);
             return true;
+
         } catch (DataAccessException e) {
             sendError(session, "Failed to access data: " + e.getMessage());
             return false;
