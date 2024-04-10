@@ -49,12 +49,10 @@ public class GameplayUI {
 
 
     public static void printBoardWhiteOrientation() {
-        //System.out.println("Board from white perspective: ");
         printBoard(INITIAL_BOARD, true);
     }
 
     public static void printBoardBlackOrientation() {
-        //System.out.println("Board from black perspective: ");
         String[][] reversedBoard = new String[8][8];
 
         for (int i = 0; i < INITIAL_BOARD.length; i++) {
@@ -62,16 +60,15 @@ public class GameplayUI {
                 // reverse order of elements in each row for the black perspective
                 reversedBoard[i][j] = INITIAL_BOARD[INITIAL_BOARD.length - 1 - i][INITIAL_BOARD[i].length - 1 - j];
             }
-            // reversedBoard[i] = INITIAL_BOARD[INITIAL_BOARD.length - 1 - i].clone();
         }
         printBoard(reversedBoard, false);
     }
 
     // for testing:
-//    public static void main(String[] args) {
-//        printBoardBlackOrientation();
-//        System.out.println();
-//        printBoardWhiteOrientation();
-//    }
+    public static void main(String[] args) {
+        printBoardBlackOrientation();
+        System.out.println();
+        printBoardWhiteOrientation();
+    }
 
 }

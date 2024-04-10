@@ -4,10 +4,7 @@ import chess.ChessGame;
 import chess.ChessMove;
 import com.google.gson.Gson;
 import webSocketMessages.serverMessages.ServerMessage;
-import webSocketMessages.userCommands.JoinObserverCommand;
-import webSocketMessages.userCommands.JoinPlayerCommand;
-import webSocketMessages.userCommands.MoveCommand;
-import webSocketMessages.userCommands.UserGameCommand;
+import webSocketMessages.userCommands.*;
 
 import javax.websocket.*;
 import java.io.IOException;
@@ -47,17 +44,17 @@ public class WebSocketClient extends Endpoint {
 
     @Override
     public void onOpen(Session session, EndpointConfig endpointConfig) {
-        System.out.println("WebSocket connection opened");
+        //System.out.println("WebSocket connection opened");
         this.session = session;
     }
 
     @OnClose
    public void onClose(Session session, CloseReason reason) {
-        System.out.println("WebSocket connection closed: " + reason);
+        //System.out.println("WebSocket connection closed: " + reason);
         this.session = null; // clear session
    }
 
-   public void sendJoinPlayerCommand(int gameID, ChessGame.TeamColor playerColor, String authToken) {
+   public void sendJoinPlayerCommand(String authToken, int gameID, ChessGame.TeamColor playerColor) {
         UserGameCommand command = new JoinPlayerCommand(authToken, gameID, playerColor);
         sendCommand(command);
    }
@@ -69,6 +66,16 @@ public class WebSocketClient extends Endpoint {
 
    public void sendMakeMoveCommand(String authToken, int gameID, ChessMove move) {
         UserGameCommand command = new MoveCommand(authToken, gameID, move);
+        sendCommand(command);
+   }
+
+   public void sendLeaveCommand(String authToken, int gameID) {
+        UserGameCommand command = new LeaveCommand(authToken, gameID);
+        sendCommand(command);
+   }
+
+   public void sendResignCommand(String authToken, int gameID) {
+        UserGameCommand command = new ResignCommand(authToken, gameID);
         sendCommand(command);
    }
 
@@ -89,6 +96,7 @@ public class WebSocketClient extends Endpoint {
    public void closeSession() throws IOException {
        if (session != null) {
            session.close();
+           System.out.println("WebSocket connection closed");
        }
    }
 

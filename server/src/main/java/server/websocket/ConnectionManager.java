@@ -36,10 +36,10 @@ public class ConnectionManager {
             // debugging
             if (userRole != UserRole.PLAYER) {
                 addObserver(gameID, playerName);
-                System.out.println("Added session for Observer to game " + gameID);
+                //System.out.println("Added session for Observer to game " + gameID);
             } else {
                 addPlayer(gameID, playerName);
-                System.out.println("Added session for " + playerName + " to game " + gameID);
+                //System.out.println("Added session for " + playerName + " to game " + gameID);
             }
             return sessions;
         });

@@ -12,6 +12,7 @@ import java.util.Objects;
  */
 public class UserGameCommand {
 
+    // constructor
     public UserGameCommand(String authToken) {
         this.authToken = authToken;
     }
@@ -25,11 +26,9 @@ public class UserGameCommand {
     }
 
     protected CommandType commandType;
-
     private final String authToken;
     private int gameID;
     private ChessGame.TeamColor playerColor;
-
     public String getAuthString() {
         return authToken;
     }
@@ -45,6 +44,7 @@ public class UserGameCommand {
     public ChessGame.TeamColor getPlayerColor() {
         return playerColor;
     }
+    public void setPlayerColor(ChessGame.TeamColor playerColor) { this.playerColor = playerColor; }
 
     public CommandType getCommandType() {
         return this.commandType;
