@@ -1,19 +1,29 @@
 package server.websocket;
 
+import chess.ChessGame;
+import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
     private final ConcurrentHashMap<String, Connection> connections = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Integer, List<Session>> gameSessions = new ConcurrentHashMap<>();
+    private final Map<Integer, ExtendedGameData> extendedGameDatas = new ConcurrentHashMap<>();
+    private final Map<Integer, Set<String>> players = new ConcurrentHashMap<>();
+    private final Map<Integer, Set<String>> observers = new ConcurrentHashMap<>();
+
+    // storing extended game data instances
+    public ExtendedGameData getExtendedGameData(int gameId) {
+        return extendedGameDatas.get(gameId);
+    }
+
+    public ExtendedGameData getOrCreateExtendedGameData(int gameId, GameData gameData, UserRole userRole) {
+        return extendedGameDatas.computeIfAbsent(gameId, x -> new ExtendedGameData(gameData, userRole));
+    }
 
     // Add user to game
-    public void add(int gameID, String playerName, Session session) {
+    public void add(int gameID, String playerName, Session session, UserRole userRole) {
         var connection = new Connection(playerName, session);
         connections.put(playerName, connection);
 
@@ -24,9 +34,11 @@ public class ConnectionManager {
             sessions.add(session);
 
             // debugging
-            if (playerName.isEmpty()) {
+            if (userRole != UserRole.PLAYER) {
+                addObserver(gameID, playerName);
                 System.out.println("Added session for Observer to game " + gameID);
             } else {
+                addPlayer(gameID, playerName);
                 System.out.println("Added session for " + playerName + " to game " + gameID);
             }
             return sessions;
@@ -36,21 +48,6 @@ public class ConnectionManager {
     public Connection get(String playerName) {
         return connections.get(playerName);
     }
-
-//    public void remove(int gameID, String playerName) {
-//        Connection connection = connections.remove(playerName);
-//
-//        if (connection != null) {
-//            gameSessions.computeIfPresent(gameID, (id, sessions) -> {
-//                sessions.remove(connection.session);
-//                if (sessions.isEmpty()) {
-//                    return null;
-//                }
-//                return sessions;
-//            });
-//            System.out.println("Removed session for " + playerName + " from game " + gameID);  // debug
-//        }
-//    }
 
     public void removeSession(Session session) {
         // find the playerName associated with the session to be removed
@@ -74,6 +71,14 @@ public class ConnectionManager {
 
     public List<Session> sessionsConnectedToGame(int gameID) {
         return gameSessions.getOrDefault(gameID, Collections.emptyList());
+    }
+
+    private void addPlayer(int gameID, String userId) {
+        players.computeIfAbsent(gameID, k -> ConcurrentHashMap.newKeySet()).add(userId);
+    }
+
+    private void addObserver(int gameID, String userId) {
+        observers.computeIfAbsent(gameID, k -> ConcurrentHashMap.newKeySet()).add(userId);
     }
 
 
