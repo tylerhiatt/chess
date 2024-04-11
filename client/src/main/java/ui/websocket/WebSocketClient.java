@@ -3,7 +3,6 @@ package ui.websocket;
 import chess.ChessGame;
 import chess.ChessMove;
 import com.google.gson.Gson;
-import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.userCommands.*;
 
 import javax.websocket.*;
@@ -30,7 +29,7 @@ public class WebSocketClient extends Endpoint {
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String message) {
-                    // System.out.println("DEBUG" + message);
+                    System.out.println("DEBUG" + message);
                     messageHandler.accept(message);
                 }
             });
@@ -43,7 +42,7 @@ public class WebSocketClient extends Endpoint {
 
     @Override
     public void onOpen(Session session, EndpointConfig endpointConfig) {
-        //System.out.println("WebSocket connection opened");
+        System.out.println("WebSocket connection opened " + session.getAsyncRemote().toString());
         this.session = session;
     }
 

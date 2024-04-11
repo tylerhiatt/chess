@@ -1,5 +1,6 @@
 package server.websocket;
 
+import chess.ChessBoard;
 import chess.ChessGame;
 import chess.InvalidMoveException;
 import dataAccess.DataAccessException;
@@ -21,6 +22,7 @@ import webSocketMessages.userCommands.MoveCommand;
 import webSocketMessages.userCommands.UserGameCommand;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.ConcurrentHashMap;
@@ -101,6 +103,9 @@ public class WebSocketHandler {
             return;
         }
 
+        // get correct game state
+        ChessGame chessGame = gameStates.computeIfAbsent(command.getGameID(), id -> new ChessGame());
+
         // instantiate when player joins game
         ExtendedGameData extendedGameData = connections.getOrCreateExtendedGameData(command.getGameID(), game, UserRole.PLAYER);
 
@@ -114,7 +119,7 @@ public class WebSocketHandler {
         }
 
         // send load game to root client
-        sendLoadGame(session, game.game());
+        sendLoadGame(session, chessGame);
 
         // send notification to other users
         broadcastNotificationToOthers(command.getGameID(), session, "Joined the game as: " + command.getPlayerColor());
@@ -125,6 +130,8 @@ public class WebSocketHandler {
         if (!validate(session, command, gameRef)) return;
 
         GameData game = gameRef.get();
+
+        ChessGame chessGame = gameStates.get(command.getGameID());
 
         connections.add(command.getGameID(), command.getAuthString(), session, UserRole.OBSERVER);
         Result joinGameResult = joinGameService.joinGame(command.getAuthString(), command.getGameID(), null);
@@ -139,7 +146,7 @@ public class WebSocketHandler {
         extendedGameData.setObserver(true);
 
         // send messages
-        sendLoadGame(session, game.game());
+        sendLoadGame(session, chessGame);
         broadcastNotificationToOthers(command.getGameID(), session, "Joined the game as an observer");
 
 
@@ -187,11 +194,12 @@ public class WebSocketHandler {
             // should handle any errors thrown with invalid moves/not player's turn, update turn
             chessGame.makeMove(command.getMove());
 
-            // put updated game state in hash map to get correct turn
+            // put updated game state in hash map to get correct turn and game state
             gameStates.put(command.getGameID(), chessGame);
 
+
             // if successful send messages
-            broadcastLoadGame(session, chessGame, game.gameID());
+            broadcastLoadGame(session, chessGame, command.getGameID());
             broadcastNotificationToOthers(command.getGameID(), session, authData.username() + " made a move: " + command.getMove().toString());
 
 
@@ -238,7 +246,7 @@ public class WebSocketHandler {
             String username = authData.username();
 
             connections.removeSession(session);
-            broadcastNotificationToOthers(command.getGameID(), session, username + "has left the game");
+            broadcastNotificationToOthers(command.getGameID(), session, username + " has left the game");
 
         } catch (DataAccessException e) {
             sendError(session, "Unable to leave game");
@@ -253,8 +261,9 @@ public class WebSocketHandler {
     }
 
     private void sendLoadGame(Session session, ChessGame game) throws IOException {
-        String gameStateJson = serializer.toJson(game.getBoard());
-        LoadGameMessage loadGameMessage = new LoadGameMessage(gameStateJson);
+        ChessBoard board = game.getBoard();
+        String chessBoardJson = serializer.toJson(board);
+        LoadGameMessage loadGameMessage = new LoadGameMessage(chessBoardJson);
         session.getRemote().sendString(serializer.toJson(loadGameMessage));
     }
 
@@ -271,10 +280,13 @@ public class WebSocketHandler {
     }
 
     private void broadcastLoadGame(Session session, ChessGame game, int gameID) throws IOException {
+        ChessBoard board = game.getBoard();
+        // serialize board
+        String chessBoardJson = serializer.toJson(board);
+        LoadGameMessage loadGameMessage = new LoadGameMessage(chessBoardJson);
+
         for (Session otherSession : connections.sessionsConnectedToGame(gameID)) {
             if (session.isOpen()) {
-
-                LoadGameMessage loadGameMessage = new LoadGameMessage(serializer.toJson(game.getBoard()));
                 otherSession.getRemote().sendString(serializer.toJson(loadGameMessage));
 
             }

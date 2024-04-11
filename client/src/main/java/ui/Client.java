@@ -16,6 +16,7 @@ import javax.websocket.DeploymentException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 import static webSocketMessages.userCommands.UserGameCommand.CommandType.LEAVE;
@@ -34,11 +35,10 @@ public class Client {
     private WebSocketClient webSocketClient; // websocket client to establish connection
     private int gameplayGameID = 0;
     private final Gson serializer = new Gson();
+    private boolean isWhite = true;
 
     public void clientStart(int port) {
         System.out.println("♕Welcome to 240 chess. Type Help to get started.♕");
-
-        // should prob clear database from time to time? idk
 
         // runs until user quits
         while (true) {
@@ -139,8 +139,10 @@ public class Client {
                         ChessGame.TeamColor teamColor = null;
                         if (playerColor.equals("WHITE")) {
                             teamColor = ChessGame.TeamColor.WHITE;
+                            isWhite = true;
                         } else if (playerColor.equals("BLACK")) {
                             teamColor = ChessGame.TeamColor.BLACK;
+                            isWhite = false;
                         }
 
                         // set gameplay ID to use for leaving and resigning game
@@ -152,9 +154,6 @@ public class Client {
 
                         // go to gameplay UI
                         isGameplay = true;
-
-                        // print initial boards
-                        printGames(playerColor);
                     }
 
                 } else {
@@ -164,6 +163,7 @@ public class Client {
             case "observe":
                 if (parts.length == 2 && isLoggedIn) {
                     joinGameUI.joinGameUI(port, userAuthToken, Integer.parseInt(parts[1]), null);  // playerColor = null means observer
+                    isWhite = true;
 
                     // websocket connection and message
                     initializeWebSocketConnection("http://localhost:" + port);
@@ -174,10 +174,6 @@ public class Client {
 
                     // switch to gameplay UI
                     isGameplay = true;
-
-                    // print initial boards simply from white perspective
-                    printGames("WHITE");
-
                 } else {
                     System.out.println("must be logged in and have syntax: observe <ID>");
                 }
@@ -186,7 +182,7 @@ public class Client {
             //// Gameplay commands ////
             case "redraw":
                 // todo: handle using websocket message response to get game state
-                GameplayUI.redrawBoard();
+                //GameplayUI.redrawBoard();
                 break;
             case "move":
                 if (parts.length == 3) {
@@ -213,25 +209,25 @@ public class Client {
                 break;
             case "leave":
                 // send websocket command to leave
+                webSocketClient.sendLeaveCommand(userAuthToken, gameplayGameID);
+                isGameplay = false;
                 try {
-                    webSocketClient.sendLeaveCommand(userAuthToken, gameplayGameID);
-                    isGameplay = false;
-
-                    // close websocket connection
                     webSocketClient.closeSession();
                 } catch (IOException e) {
-                    System.err.println("Error closing WebSocket connection: " + e.getMessage());
+                    throw new RuntimeException(e);
                 }
+
                 break;
             case "resign":
                 // send websocket command to resign game
+                webSocketClient.sendResignCommand(userAuthToken, gameplayGameID);
+                isGameplay = false;
                 try {
-                    webSocketClient.sendResignCommand(userAuthToken, gameplayGameID);
-                    isGameplay = false;
                     webSocketClient.closeSession();
                 } catch (IOException e) {
-                    System.err.println("Error closing WebSocket connection: " + e.getMessage());
+                    throw new RuntimeException(e);
                 }
+
                 break;
 
             default:
@@ -269,21 +265,6 @@ public class Client {
         }
     }
 
-    private static void printGames(String playerColor) {
-        if (playerColor.equals("WHITE")) {
-            // print black then white
-            GameplayUI.printBoardBlackOrientation();
-            System.out.println();
-            GameplayUI.printBoardWhiteOrientation();
-        } else if (playerColor.equals("BLACK")) {
-            // print white then black
-            GameplayUI.printBoardWhiteOrientation();
-            System.out.println();
-            GameplayUI.printBoardBlackOrientation();
-        }
-
-    }
-
     //// websocket handler methods to start connection and handle server messages
     private void initializeWebSocketConnection(String url) {
         try {
@@ -300,11 +281,7 @@ public class Client {
         switch (baseMessage.getServerMessageType()) {
             case LOAD_GAME:
                 LoadGameMessage loadGameMessage = serializer.fromJson(messageJson, LoadGameMessage.class);
-                String gameStateJson = serializer.toJson(loadGameMessage.getGame());
-                ChessBoard board = serializer.fromJson(gameStateJson, ChessBoard.class);
-                System.out.println("Load Game Message here");
-
-                // todo: call method to update chess board here
+                handleLoadGame(loadGameMessage.getChessBoardJson());  // handle load game and update game state based on player color
                 break;
             case NOTIFICATION:
                 // print out notification message
@@ -322,7 +299,21 @@ public class Client {
         }
     }
 
+    private void handleLoadGame(String chessBoardJson) {
+        System.out.println("Load Game Message received");
+
+        ChessBoard board = serializer.fromJson(chessBoardJson, ChessBoard.class);
+
+        // make sure to get correct state of board
+        ChessBoard currentBoard = ChessBoard.getInstance();
+        currentBoard.updateState(board);
+
+        GameplayUI.updateBoard(board, isWhite);
+    }
+
     private ChessPosition convertMoveToChessPos(String pos){
+        if (pos.length() != 2) throw new IllegalArgumentException("Invalid position format");
+
         // split up pos
         int col = pos.charAt(0) - 'a' + 1; // a maps to 1, b -> 2, etc.
         int row = pos.charAt(1) - '0';  // 1 stays 1, etc.

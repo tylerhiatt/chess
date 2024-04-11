@@ -1,5 +1,8 @@
 package chess;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A chessboard that can hold and rearrange chess pieces.
@@ -11,6 +14,7 @@ public class ChessBoard {
 
     // class attributes
     ChessPiece[][] board;
+    private static ChessBoard instance;
 
     // override equals, hashcode and to string methods
     @Override
@@ -33,10 +37,28 @@ public class ChessBoard {
                 '}';
     }
 
+
     public ChessBoard() {
         // initialize chess board array
         this.board = new ChessPiece[8][8];
     }
+
+    // ensure only using one state of chessboard
+    public static ChessBoard getInstance() {
+        if (instance == null) {
+            synchronized (ChessBoard.class) {
+                if (instance == null) {
+                    instance = new ChessBoard();
+                }
+            }
+        }
+        return instance;
+    }
+
+    public void updateState(ChessBoard receivedBoard) {
+        this.board = receivedBoard.board;
+    }
+
 
     public void simulateMove(ChessBoard tempBoard, ChessMove move) {
         ChessPiece piece = tempBoard.getPiece(move.getStartPosition());
@@ -45,6 +67,10 @@ public class ChessBoard {
             tempBoard.addPiece(move.getStartPosition(), null);
         }
 
+    }
+
+    public ChessPiece[][] getCurrentBoard() {
+        return this.board;
     }
 
     /**
