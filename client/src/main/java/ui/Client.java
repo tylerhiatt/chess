@@ -1,15 +1,21 @@
 package ui;
 
+import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPosition;
+import com.google.gson.Gson;
 import ui.websocket.WebSocketClient;
+import webSocketMessages.serverMessages.ErrorMessage;
+import webSocketMessages.serverMessages.LoadGameMessage;
+import webSocketMessages.serverMessages.NotificationMessage;
 import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.userCommands.UserGameCommand;
 
 import javax.websocket.DeploymentException;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.Scanner;
 
 import static webSocketMessages.userCommands.UserGameCommand.CommandType.LEAVE;
@@ -27,6 +33,7 @@ public class Client {
     private static String userAuthToken;  // used for multiple client methods
     private WebSocketClient webSocketClient; // websocket client to establish connection
     private int gameplayGameID = 0;
+    private final Gson serializer = new Gson();
 
     public void clientStart(int port) {
         System.out.println("♕Welcome to 240 chess. Type Help to get started.♕");
@@ -179,7 +186,7 @@ public class Client {
             //// Gameplay commands ////
             case "redraw":
                 // todo: handle using websocket message response to get game state
-                printGames("WHITE");
+                GameplayUI.redrawBoard();
                 break;
             case "move":
                 if (parts.length == 3) {
@@ -200,6 +207,8 @@ public class Client {
                 if (parts.length == 2) {
                     // turn command into ChessPosition
                     ChessPosition pos = convertMoveToChessPos(parts[1]);
+
+                    // todo: check pos and it's valid moves against board state, iterate over board and highlight moves that are valid
                 }
                 break;
             case "leave":
@@ -275,19 +284,42 @@ public class Client {
 
     }
 
+    //// websocket handler methods to start connection and handle server messages
     private void initializeWebSocketConnection(String url) {
         try {
-            this.webSocketClient = new WebSocketClient(url, this::handleWebsocketMessage);
+            this.webSocketClient = new WebSocketClient(url, this::handleWebSocketMessage);
             System.out.println("Websocket connection established");
 
         } catch (URISyntaxException | DeploymentException | IOException e) {
             System.err.println("Failed to establish WebSocket connection: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
-    private void handleWebsocketMessage(ServerMessage message) {
-        //System.out.println("WebSocket message received: " + message);
+    private void handleWebSocketMessage(String messageJson) {
+        ServerMessage baseMessage = serializer.fromJson(messageJson, ServerMessage.class);
+        switch (baseMessage.getServerMessageType()) {
+            case LOAD_GAME:
+                LoadGameMessage loadGameMessage = serializer.fromJson(messageJson, LoadGameMessage.class);
+                String gameStateJson = serializer.toJson(loadGameMessage.getGame());
+                ChessBoard board = serializer.fromJson(gameStateJson, ChessBoard.class);
+                System.out.println("Load Game Message here");
+
+                // todo: call method to update chess board here
+                break;
+            case NOTIFICATION:
+                // print out notification message
+                NotificationMessage notificationMessage = serializer.fromJson(messageJson, NotificationMessage.class);
+                System.out.println("Notification: " + notificationMessage.getMessage());
+                break;
+            case ERROR:
+                // print out error message
+                ErrorMessage errorMessage = serializer.fromJson(messageJson, ErrorMessage.class);
+                System.err.println("Error: " + errorMessage.getErrorMessage());
+                break;
+            default:
+                System.out.println("Received an unknown message type");
+                break;
+        }
     }
 
     private ChessPosition convertMoveToChessPos(String pos){
@@ -297,5 +329,6 @@ public class Client {
         return new ChessPosition(row, col);
 
     }
+
 
 }

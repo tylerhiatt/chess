@@ -253,7 +253,7 @@ public class WebSocketHandler {
     }
 
     private void sendLoadGame(Session session, ChessGame game) throws IOException {
-        String gameStateJson = serializer.toJson(game);
+        String gameStateJson = serializer.toJson(game.getBoard());
         LoadGameMessage loadGameMessage = new LoadGameMessage(gameStateJson);
         session.getRemote().sendString(serializer.toJson(loadGameMessage));
     }
@@ -261,7 +261,7 @@ public class WebSocketHandler {
     private void broadcastNotificationToOthers(int gameID, Session excludeSession, String notificationText) throws IOException {
         for (Session otherSession : connections.sessionsConnectedToGame(gameID)) {
             // exclude root client
-            if (!otherSession.equals(excludeSession) && otherSession.isOpen()) {
+            if (otherSession.isOpen()) {  // !otherSession.equals(excludeSession) &&
                 // notification message
                 NotificationMessage notificationMessage = new NotificationMessage(notificationText);
                 otherSession.getRemote().sendString(serializer.toJson(notificationMessage));
@@ -274,7 +274,7 @@ public class WebSocketHandler {
         for (Session otherSession : connections.sessionsConnectedToGame(gameID)) {
             if (session.isOpen()) {
 
-                LoadGameMessage loadGameMessage = new LoadGameMessage(serializer.toJson(game));
+                LoadGameMessage loadGameMessage = new LoadGameMessage(serializer.toJson(game.getBoard()));
                 otherSession.getRemote().sendString(serializer.toJson(loadGameMessage));
 
             }

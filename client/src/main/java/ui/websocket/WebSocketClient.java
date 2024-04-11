@@ -10,15 +10,14 @@ import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.function.Consumer;
 
 
 public class WebSocketClient extends Endpoint {
    private Session session;
    private final Gson serializer = new Gson();
-   private NotificationHandler notificationHandler;
 
-    public WebSocketClient(String url, NotificationHandler notificationHandler) throws URISyntaxException, DeploymentException, IOException {
-        this.notificationHandler = notificationHandler;
+    public WebSocketClient(String url, Consumer<String> messageHandler) throws URISyntaxException, DeploymentException, IOException {
 
         try {
             url = url.replace("http", "ws");
@@ -31,8 +30,8 @@ public class WebSocketClient extends Endpoint {
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String message) {
-                    ServerMessage serverMessage = serializer.fromJson(message, ServerMessage.class);
-                    notificationHandler.notify(serverMessage);
+                    // System.out.println("DEBUG" + message);
+                    messageHandler.accept(message);
                 }
             });
 

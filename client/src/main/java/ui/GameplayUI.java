@@ -1,8 +1,15 @@
 package ui;
 
+import chess.ChessBoard;
+
 public class GameplayUI {
 
-    private static final String[][] INITIAL_BOARD = {
+    private static final String whiteSquare = EscapeSequences.SET_BG_COLOR_LIGHT_GREY;
+    private static final String blackSquare = EscapeSequences.SET_BG_COLOR_DARK_GREY;
+    private static final String resetBackground = EscapeSequences.RESET_BG_COLOR_DEFAULT;
+
+
+    private static final String[][] initialBoard = {
         {EscapeSequences.WHITE_ROOK, EscapeSequences.WHITE_KNIGHT, EscapeSequences.WHITE_BISHOP, EscapeSequences.WHITE_QUEEN, EscapeSequences.WHITE_KING, EscapeSequences.WHITE_BISHOP, EscapeSequences.WHITE_KNIGHT, EscapeSequences.WHITE_ROOK},
         {EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN, EscapeSequences.WHITE_PAWN},
         {EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY, EscapeSequences.EMPTY},
@@ -25,40 +32,62 @@ public class GameplayUI {
             System.out.print(rowNumber + " ");
 
             for (int j = 0; j < board[i].length; j++) {
-                System.out.print("|" + board[i][j]); // add grid line between pieces
+                // alternate colors
+                boolean isWhiteSquare = (i + j) % 2 == 0;
+                printSquare(board[i][j], isWhiteSquare);
             }
 
             // close last grid line and print row num
-            System.out.println("| " + rowNumber);
+            System.out.println(" " + rowNumber);
 
         }
         // print col letters at the bottom
         printLetters(orientWhite);
+        System.out.print(resetBackground);
 
+    }
+
+    private static void printSquare(String piece, boolean isWhiteSquare) {
+        String squareColor = isWhiteSquare ? whiteSquare : blackSquare;
+        System.out.print(squareColor + piece + resetBackground);
     }
 
     private static void printLetters(boolean orientWhite) {
         // take into account orientation
-        System.out.print("   ");
+        System.out.print("  ");
         for (int c = 0; c < 8; c++) {
             char letter = (char) ('a' + (orientWhite ? c : 7 - c));
-            System.out.print(" " + letter + "  ");
+            System.out.print(" " + letter + " ");
         }
         System.out.println();
     }
 
+    public static void updateBoard(ChessBoard newBoardState) {
+        // figure out how to implement this
+
+    }
+
+    public static void redrawBoard() {
+        System.out.print(EscapeSequences.ERASE_SCREEN);
+        System.out.flush();
+
+        printBoardBlackOrientation();
+        System.out.println();
+        printBoardWhiteOrientation();
+    }
+
 
     public static void printBoardWhiteOrientation() {
-        printBoard(INITIAL_BOARD, true);
+        printBoard(initialBoard, true);
     }
 
     public static void printBoardBlackOrientation() {
         String[][] reversedBoard = new String[8][8];
 
-        for (int i = 0; i < INITIAL_BOARD.length; i++) {
-            for (int j = 0; j < INITIAL_BOARD[i].length; j++) {
+        for (int i = 0; i < initialBoard.length; i++) {
+            for (int j = 0; j < initialBoard[i].length; j++) {
                 // reverse order of elements in each row for the black perspective
-                reversedBoard[i][j] = INITIAL_BOARD[INITIAL_BOARD.length - 1 - i][INITIAL_BOARD[i].length - 1 - j];
+                reversedBoard[i][j] = initialBoard[initialBoard.length - 1 - i][initialBoard[i].length - 1 - j];
             }
         }
         printBoard(reversedBoard, false);
