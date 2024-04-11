@@ -261,7 +261,7 @@ public class WebSocketHandler {
     private void broadcastNotificationToOthers(int gameID, Session excludeSession, String notificationText) throws IOException {
         for (Session otherSession : connections.sessionsConnectedToGame(gameID)) {
             // exclude root client
-            if (otherSession.isOpen()) {  // !otherSession.equals(excludeSession) &&
+            if (!otherSession.equals(excludeSession) && otherSession.isOpen()) {
                 // notification message
                 NotificationMessage notificationMessage = new NotificationMessage(notificationText);
                 otherSession.getRemote().sendString(serializer.toJson(notificationMessage));
