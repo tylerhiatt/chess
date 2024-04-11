@@ -1,6 +1,6 @@
 import chess.*;
 import ui.Client;
-import server.Server;
+// import server.Server;
 
 public class Main {
 
@@ -10,12 +10,12 @@ public class Main {
         System.out.println("♕ 240 Chess Client");
 
         // start server
-        Server server = new Server();
-        int port = server.run(8080);
-        System.out.println("Server running on port: " + port);
-
-        // interact with server with client UI
-        client.clientStart(port);
+//        Server server = new Server();
+//        int port = server.run(8080);
+//        System.out.println("Server running on port: " + port);
+//
+//        // interact with server with client UI
+//        client.clientStart(port);
 
     }
 
