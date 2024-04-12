@@ -29,7 +29,7 @@ public class WebSocketClient extends Endpoint {
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String message) {
-                    System.out.println("DEBUG" + message);
+                    // System.out.println("DEBUG" + message);
                     messageHandler.accept(message);
                 }
             });
@@ -42,7 +42,7 @@ public class WebSocketClient extends Endpoint {
 
     @Override
     public void onOpen(Session session, EndpointConfig endpointConfig) {
-        System.out.println("WebSocket connection opened " + session.getAsyncRemote().toString());
+        // System.out.println("WebSocket connection opened " + session.getAsyncRemote().toString());
         this.session = session;
     }
 

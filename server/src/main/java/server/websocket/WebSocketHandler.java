@@ -22,7 +22,6 @@ import webSocketMessages.userCommands.MoveCommand;
 import webSocketMessages.userCommands.UserGameCommand;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,19 +33,6 @@ public class WebSocketHandler {
     private final JoinGameService joinGameService = new JoinGameService();
     private final Gson serializer = new Gson();
     private final ConcurrentHashMap<Integer, ChessGame> gameStates = new ConcurrentHashMap<>();
-
-
-    @OnWebSocketConnect
-    public void onConnect(Session session) {
-        System.out.println("New connection opened: " + session.getRemoteAddress().getAddress());
-    }
-
-    @OnWebSocketClose
-    public void onClose(Session session, int statusCode, String reason) {
-        // remove player from connection
-//        connections.removeSession(session);
-//        System.out.println("Connection closed: " + session.getRemoteAddress().getAddress() + ", Reason: " + reason);
-    }
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) {
@@ -131,7 +117,7 @@ public class WebSocketHandler {
 
         GameData game = gameRef.get();
 
-        ChessGame chessGame = gameStates.get(command.getGameID());
+        ChessGame chessGame = gameStates.computeIfAbsent(command.getGameID(), id -> new ChessGame());;
 
         connections.add(command.getGameID(), command.getAuthString(), session, UserRole.OBSERVER);
         Result joinGameResult = joinGameService.joinGame(command.getAuthString(), command.getGameID(), null);

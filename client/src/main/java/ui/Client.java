@@ -1,9 +1,6 @@
 package ui;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessMove;
-import chess.ChessPosition;
+import chess.*;
 import com.google.gson.Gson;
 import ui.websocket.WebSocketClient;
 import webSocketMessages.serverMessages.ErrorMessage;
@@ -16,6 +13,7 @@ import javax.websocket.DeploymentException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Scanner;
 
@@ -36,6 +34,7 @@ public class Client {
     private int gameplayGameID = 0;
     private final Gson serializer = new Gson();
     private boolean isWhite = true;
+    private String username;
 
     public void clientStart(int port) {
         System.out.println("♕Welcome to 240 chess. Type Help to get started.♕");
@@ -59,7 +58,17 @@ public class Client {
         String[] parts = input.split(" ");
         String command = parts[0].toLowerCase();
 
-        switch(command) {
+        if (!isLoggedIn) {
+            handlePreLoginCommands(command, parts, port);
+        } else if (!isGameplay) {
+            handlePostLoginCommands(command, parts, port);
+        } else {
+            handleGameplayCommands(command, parts, port);
+        }
+    }
+
+    private void handleGenericUICommands(String command) {
+        switch (command) {
             //// Generic UI Commands ////
             case "help":
                 displayHelp();
@@ -75,31 +84,47 @@ public class Client {
                 }
                 System.exit(0); // exit UI and stop server
                 break;
+            default:
+                System.out.println("Unknown command. Type 'help' to see available commands.");
+                break;
+        }
+    }
 
-            //// PreLogin Commands ////
+    private void handlePreLoginCommands(String command, String[] parts, int port) {
+        switch (command) {
+            /// PreLogin Commands ////
             case "login":
                 if (parts.length == 3 && !isLoggedIn) {
                     userAuthToken = loginUI.loginUI(port, parts[1], parts[2]);  // grab authToken when logging in user
                     if (userAuthToken != null) {
                         isLoggedIn = true;  // make sure to only change UI display if the user is actually logged in
+                        username = parts[1]; // set username
                     }
                 } else {
                     System.out.println("must have syntax if not already logged in: login <USERNAME> <PASSWORD>");
                 }
                 break;
             case "register":
-                if(parts.length == 4 && !isLoggedIn) {
+                if (parts.length == 4 && !isLoggedIn) {
                     String newAuthToken = registerUI.registerUI(port, parts[1], parts[2], parts[3]);
                     if (newAuthToken != null) {
                         userAuthToken = newAuthToken;
                         isLoggedIn = true;
+                        username = parts[1]; // set username
                     }
 
                 } else {
                     System.out.println("must have syntax if not already logged in: register <USERNAME> <PASSWORD> <EMAIL>");
                 }
                 break;
+            default:
+                handleGenericUICommands(command);
+                break;
+        }
+    }
 
+    private void handlePostLoginCommands(String command, String[] parts, int port) {
+        switch (command) {
             //// PostLogin Commands ////
             case "logout":
                 if (userAuthToken != null) {
@@ -148,6 +173,9 @@ public class Client {
                         // set gameplay ID to use for leaving and resigning game
                         gameplayGameID = Integer.parseInt(parts[1]);
 
+                        // send notification message
+                        System.out.println("Notification: " + username + " has joined the game as " + playerColor);
+
                         // websocket connection and message
                         initializeWebSocketConnection("http://localhost:" + port);
                         webSocketClient.sendJoinPlayerCommand(userAuthToken, Integer.parseInt(parts[1]), teamColor);
@@ -165,6 +193,9 @@ public class Client {
                     joinGameUI.joinGameUI(port, userAuthToken, Integer.parseInt(parts[1]), null);  // playerColor = null means observer
                     isWhite = true;
 
+                    // notification message
+                    System.out.println("Notification: " + username + " has joined the game as an observer");
+
                     // websocket connection and message
                     initializeWebSocketConnection("http://localhost:" + port);
                     webSocketClient.sendJoinObserverCommand(userAuthToken, Integer.parseInt(parts[1]));
@@ -178,11 +209,17 @@ public class Client {
                     System.out.println("must be logged in and have syntax: observe <ID>");
                 }
                 break;
+            default:
+                handleGenericUICommands(command);
+                break;
+        }
+    }
 
+    private void handleGameplayCommands(String command, String[] parts, int port) {
+        switch (command) {
             //// Gameplay commands ////
             case "redraw":
-                // todo: handle using websocket message response to get game state
-                //GameplayUI.redrawBoard();
+                GameplayUI.redrawBoard(isWhite);
                 break;
             case "move":
                 if (parts.length == 3) {
@@ -192,6 +229,9 @@ public class Client {
                         ChessPosition endPos = convertMoveToChessPos(parts[2]);
                         ChessMove move = new ChessMove(startPos, endPos, null);
 
+                        // notification message
+                        System.out.println("Notification: " + username + " made move " + parts[1] + " to " + parts[2]);
+
                         // send make move command
                         webSocketClient.sendMakeMoveCommand(userAuthToken, gameplayGameID, move);
                     } catch (Exception e) {
@@ -200,15 +240,10 @@ public class Client {
                 }
                 break;
             case "highlight":
-                if (parts.length == 2) {
-                    // turn command into ChessPosition
-                    ChessPosition pos = convertMoveToChessPos(parts[1]);
-
-                    // todo: check pos and it's valid moves against board state, iterate over board and highlight moves that are valid
-                }
                 break;
             case "leave":
                 // send websocket command to leave
+                System.out.println("Notification: " + username + " has left the game");
                 webSocketClient.sendLeaveCommand(userAuthToken, gameplayGameID);
                 isGameplay = false;
                 try {
@@ -216,10 +251,10 @@ public class Client {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-
                 break;
             case "resign":
                 // send websocket command to resign game
+                System.out.println("Notification: " + username + " has resigned from the game");
                 webSocketClient.sendResignCommand(userAuthToken, gameplayGameID);
                 isGameplay = false;
                 try {
@@ -227,11 +262,9 @@ public class Client {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-
                 break;
-
             default:
-                System.out.println("Unknown command. Type 'help' to see available commands.");
+                handleGenericUICommands(command);
                 break;
         }
     }

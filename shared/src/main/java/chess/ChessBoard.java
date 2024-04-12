@@ -56,7 +56,18 @@ public class ChessBoard {
     }
 
     public void updateState(ChessBoard receivedBoard) {
-        this.board = receivedBoard.board;
+
+        ChessPiece[][] received = receivedBoard.board;
+
+        // flip board vertically for the current player:
+        for(int i = 0; i < received.length / 2; i++) {
+            ChessPiece[] temp = received[i];
+            received[i] = received[received.length - i - 1];
+            received[received.length - i - 1] = temp;
+        }
+
+        // update the board
+        this.board = received;
     }
 
 
