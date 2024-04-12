@@ -42,15 +42,8 @@ public class WebSocketClient extends Endpoint {
 
     @Override
     public void onOpen(Session session, EndpointConfig endpointConfig) {
-        // System.out.println("WebSocket connection opened " + session.getAsyncRemote().toString());
         this.session = session;
     }
-
-    @OnClose
-   public void onClose(Session session, CloseReason reason) {
-        //System.out.println("WebSocket connection closed: " + reason);
-        this.session = null; // clear session
-   }
 
    public void sendJoinPlayerCommand(String authToken, int gameID, ChessGame.TeamColor playerColor) {
         UserGameCommand command = new JoinPlayerCommand(authToken, gameID, playerColor);

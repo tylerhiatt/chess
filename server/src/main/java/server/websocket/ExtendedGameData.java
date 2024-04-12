@@ -22,40 +22,14 @@ public class ExtendedGameData {
         this.isResigned = false;
     }
 
-    public GameData getGameData() {
-        return gameData;
-    }
-
-    public void addUserRole(String userID, UserRole role) {
-        userRoles.put(userID, role);
-    }
-
-    public UserRole getUserRole(String userID) {
-        return userRoles.getOrDefault(userID, UserRole.PLAYER);
-    }
-
     public boolean isResigned() {
         return isResigned;
     }
-
-    public boolean isObserver() {
-        return isObserver;
-    }
-
     public void setResigned(boolean resigned) {
         this.isResigned = resigned;
     }
-
     public void setObserver(boolean observer) {
         this.isObserver = observer;
-    }
-
-    public ChessGame.TeamColor getCurrentTurn() {
-        return currentTurn;
-    }
-
-    public void setCurrentTurn(ChessGame.TeamColor currentTurn) {
-        this.currentTurn = currentTurn;
     }
 
 }

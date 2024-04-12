@@ -13,16 +13,6 @@ public class ConnectionManager {
     private final Map<Integer, ExtendedGameData> extendedGameDatas = new ConcurrentHashMap<>();
     private final Map<Integer, Set<String>> players = new ConcurrentHashMap<>();
     private final Map<Integer, Set<String>> observers = new ConcurrentHashMap<>();
-//    private final ConcurrentHashMap<Integer, ChessGame> gameStates = new ConcurrentHashMap<>();
-//
-//    // methods to manage game states
-//    public void setGameState(int gameId, ChessGame chessGame) {
-//        gameStates.put(gameId, chessGame);
-//    }
-
-//    public ChessBoard getGameState(int gameId) {
-//        return gameStates.get(gameId);
-//    }
 
     // storing extended game data instances
     public ExtendedGameData getExtendedGameData(int gameId) {
